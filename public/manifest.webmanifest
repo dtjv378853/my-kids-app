@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "عالم الأبطال - A World of Heroes",
+  "short_name": "عالم الأبطال",
+  "description": "تطبيق تحفيزي للأطفال لتشجيع العادات الإيجابية وإنجاز المهام وحصد النجوم والمكافآت مع الأبطال الخارقين",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#D8C6B7",
+  "background_color": "#C8B6A6",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

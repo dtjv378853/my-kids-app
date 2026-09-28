@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#C8B6A6" />
+      <stop offset="100%" stopColor="#B39B88" />
+    </linearGradient>
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#FFF066" />
+      <stop offset="100%" stopColor="#FBBF24" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#2B1810" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)" />
+  <rect width="496" height="496" x="8" y="8" rx="102" fill="none" stroke="#6E4935" stroke-width="8" opacity="0.4" />
+
+  <!-- Smiling Star Character -->
+  <g filter="url(#shadow)" transform="translate(6, 0)">
+    <polygon
+      points="250,55 315,190 460,210 355,315 380,455 250,385 120,455 145,315 40,210 185,190"
+      fill="url(#starGrad)"
+      stroke="#2B1810"
+      stroke-width="16"
+      stroke-linejoin="round"
+    />
+    
+    <!-- Left Eye -->
+    <circle cx="210" cy="235" r="16" fill="#2B1810" />
+    <circle cx="215" cy="230" r="5" fill="#FFFFFF" />
+
+    <!-- Right Eye -->
+    <circle cx="290" cy="235" r="16" fill="#2B1810" />
+    <circle cx="295" cy="230" r="5" fill="#FFFFFF" />
+
+    <!-- Rosy Cheeks -->
+    <ellipse cx="180" cy="265" rx="18" ry="10" fill="#F87171" opacity="0.8" />
+    <ellipse cx="320" cy="265" rx="18" ry="10" fill="#F87171" opacity="0.8" />
+
+    <!-- Happy Smile -->
+    <path
+      d="M 220 270 Q 250 310 280 270"
+      fill="none"
+      stroke="#2B1810"
+      stroke-width="14"
+      stroke-linecap="round"
+    />
+  </g>
+</svg>

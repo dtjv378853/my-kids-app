@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Baloo Bhaijaan 2', 'Cairo', system-ui, sans-serif;
+    background-color: #C8B6A6;
+    color: #2F1E16;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom Wood Texture Button Effect */
+.wood-button {
+  background: linear-gradient(180deg, #CEB7A4 0%, #B89C86 50%, #9F836E 100%);
+  box-shadow: 
+    inset 0 2px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+    0 6px 12px rgba(60, 35, 20, 0.35);
+  border: 3px solid #6E4935;
+  position: relative;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
+}
+
+.wood-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 12px,
+    rgba(255, 255, 255, 0.04) 24px
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Comic / Card Drop Shadow */
+.comic-shadow {
+  box-shadow: 0px 5px 0px #000000;
+}
+
+.comic-shadow-sm {
+  box-shadow: 0px 3px 0px #000000;
+}
+
+.comic-shadow-lg {
+  box-shadow: 0px 8px 0px #000000;
+}
+
+/* Folded Corner Effect for "المزيد من التحديات" */
+.folded-corner-button {
+  position: relative;
+  background-color: #B5847B;
+  border-radius: 8px 8px 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.folded-corner-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 22px 22px 0 0;
+  border-color: #8E5C53 transparent transparent transparent;
+}
+
+/* Pulsing star animation */
+@keyframes starBounce {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(-6deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(4deg);
+  }
+  75% {
+    transform: scale(1.18) rotate(-3deg);
+  }
+}
+
+.animate-star-bounce {
+  animation: starBounce 2.5s infinite ease-in-out;
+}
+
+@keyframes sparkleSpin {
+  0% {
+    transform: scale(0.8) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) rotate(360deg);
+    opacity: 0.7;
+  }
+}
+
+.animate-sparkle {
+  animation: sparkleSpin 3s infinite linear;
+}
