@@ -1,0 +1,4420 @@
+====================================================================
+  عالم الأبطال - A World of Heroes | الكود النهائي الكامل للتطبيق
+====================================================================
+
+
+
+==================== FILE: package.json ====================
+
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "canvas-confetti": "^1.9.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^8.3.0"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}
+
+
+==================== FILE: tsconfig.json ====================
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "types": ["vite/client", "vite-plugin-pwa/client"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+
+
+==================== FILE: vite.config.ts ====================
+
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig(() => {
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+        manifest: {
+          id: '/',
+          name: 'عالم الأبطال - A World of Heroes',
+          short_name: 'عالم الأبطال',
+          description: 'تطبيق تحفيزي للأطفال لتشجيع العادات الإيجابية وإنجاز المهام وحصد النجوم والمكافآت مع الأبطال الخارقين',
+          theme_color: '#D8C6B7',
+          background_color: '#C8B6A6',
+          display: 'standalone',
+          start_url: '/',
+          scope: '/',
+          icons: [
+            {
+              src: '/pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/icon.svg',
+              sizes: '512x512',
+              type: 'image/svg+xml',
+              purpose: 'maskable',
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
+          navigateFallbackDenylist: [/\.zip$/i, /\.txt$/i],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'gstatic-fonts-cache',
+                expiration: {
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+          ],
+        },
+        devOptions: {
+          enabled: true,
+        },
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modify—file watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+
+
+==================== FILE: index.html ====================
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>عالم الأبطال - A World of Heroes</title>
+    <meta name="description" content="تطبيق عالم الأبطال لتشجيع الأطفال على المهام اليومية الإيجابية وجمع النجوم وطلب هدايا الأبطال المميزة بالبريد" />
+    <meta property="og:title" content="عالم الأبطال - A World of Heroes" />
+    <meta property="og:description" content="تطبيق عالم الأبطال لتشجيع الأطفال على المهام اليومية الإيجابية وجمع النجوم وطلب هدايا الأبطال المميزة بالبريد" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#10B981" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="عالم الأبطال" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&family=Marhey:wght@500;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#FFF8EE] text-[#3D2314] antialiased select-none min-h-screen font-['Baloo_Bhaijaan_2',sans-serif]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+==================== FILE: metadata.json ====================
+
+{
+  "name": "عالم الأبطال - A World of Heroes",
+  "description": "تطبيق عالم الأبطال لتشجيع الأطفال على المهام اليومية الإيجابية وجمع النجوم وطلب هدايا الأبطال المميزة بالبريد",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
+
+==================== FILE: public/manifest.webmanifest ====================
+
+{
+  "id": "/",
+  "name": "عالم الأبطال - A World of Heroes",
+  "short_name": "عالم الأبطال",
+  "description": "تطبيق تحفيزي للأطفال لتشجيع العادات الإيجابية وإنجاز المهام وحصد النجوم والمكافآت مع الأبطال الخارقين",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#D8C6B7",
+  "background_color": "#C8B6A6",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
+
+
+==================== FILE: src/main.tsx ====================
+
+import {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { registerSW } from 'virtual:pwa-register';
+
+// Register service worker immediately to enable 100% offline access
+registerSW({ immediate: true });
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+
+
+
+==================== FILE: src/App.tsx ====================
+
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState, useEffect } from 'react';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { ParentAuthScreen } from './components/ParentAuthScreen';
+import { HeroesScreen } from './components/HeroesScreen';
+import { HomeScreen } from './components/HomeScreen';
+import { ChallengesScreen } from './components/ChallengesScreen';
+import { RewardsScreen } from './components/RewardsScreen';
+import { StarCelebrationModal } from './components/StarCelebrationModal';
+import { TopMotivationalToast } from './components/TopMotivationalToast';
+import { ParentRewardRequestsModal } from './components/ParentRewardRequestsModal';
+import { getRandomMotivationalMessage } from './data/motivationalMessages';
+import { DAILY_TASKS, HEROES, REWARDS } from './data/appData';
+import { Task, Reward, ParentChildProfile, CustomRewardRequest } from './types';
+import { playPopSound } from './utils/audio';
+
+type Screen = 'welcome' | 'parent_auth' | 'heroes' | 'home' | 'challenges' | 'rewards';
+
+const STORAGE_KEYS = {
+  STARS: 'world_of_heroes_stars',
+  HERO: 'world_of_heroes_selected_hero',
+  COMPLETED: 'world_of_heroes_completed_tasks',
+  LAST_DATE: 'world_of_heroes_last_date',
+  PROFILE: 'world_of_heroes_parent_child_profile',
+  CUSTOM_REQUESTS: 'world_of_heroes_custom_reward_requests',
+  REWARDS: 'world_of_heroes_rewards_list',
+};
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
+  const [returnScreenAfterAuth, setReturnScreenAfterAuth] = useState<Screen>('heroes');
+  const [selectedHeroId, setSelectedHeroId] = useState<string>('hero-blue');
+  const [stars, setStars] = useState<number>(0);
+  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const [celebrationOpen, setCelebrationOpen] = useState<boolean>(false);
+  const [celebratingTask, setCelebratingTask] = useState<Task | null>(null);
+  const [showParentModal, setShowParentModal] = useState<boolean>(false);
+  const [showParentRequestsModal, setShowParentRequestsModal] = useState<boolean>(false);
+
+  // Mother Login & Child Name Profile
+  const [profile, setProfile] = useState<ParentChildProfile | null>(null);
+
+  // Rewards list
+  const [rewardsList, setRewardsList] = useState<Reward[]>(REWARDS);
+
+  // Child's custom gift requests
+  const [customRequests, setCustomRequests] = useState<CustomRewardRequest[]>([]);
+
+  // Top motivational message when completing any task
+  const [motivationalMessage, setMotivationalMessage] = useState<string | null>(null);
+  const [motivationalTaskTitle, setMotivationalTaskTitle] = useState<string | undefined>(undefined);
+
+  // Initialize and load saved state from localStorage
+  useEffect(() => {
+    try {
+      const savedStars = localStorage.getItem(STORAGE_KEYS.STARS);
+      if (savedStars !== null) {
+        setStars(parseInt(savedStars, 10) || 0);
+      }
+
+      const savedHero = localStorage.getItem(STORAGE_KEYS.HERO);
+      if (savedHero && HEROES.some((h) => h.id === savedHero)) {
+        setSelectedHeroId(savedHero);
+      }
+
+      const savedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
+      if (savedProfile) {
+        setProfile(JSON.parse(savedProfile));
+      }
+
+      const savedRewards = localStorage.getItem(STORAGE_KEYS.REWARDS);
+      if (savedRewards) {
+        const parsed: Reward[] = JSON.parse(savedRewards);
+        // Ensure removed rewards (chocolate & favorite meal) do not persist from older localStorage
+        const filtered = parsed.filter((r) => r.id !== 'r3' && r.id !== 'r4');
+        setRewardsList(filtered);
+        localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(filtered));
+      }
+
+      const savedCustomReqs = localStorage.getItem(STORAGE_KEYS.CUSTOM_REQUESTS);
+      if (savedCustomReqs) {
+        setCustomRequests(JSON.parse(savedCustomReqs));
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const savedDate = localStorage.getItem(STORAGE_KEYS.LAST_DATE);
+
+      if (savedDate === todayStr) {
+        const savedCompleted = localStorage.getItem(STORAGE_KEYS.COMPLETED);
+        if (savedCompleted) {
+          setCompletedTaskIds(JSON.parse(savedCompleted));
+        }
+      } else {
+        localStorage.setItem(STORAGE_KEYS.LAST_DATE, todayStr);
+        localStorage.setItem(STORAGE_KEYS.COMPLETED, JSON.stringify([]));
+        setCompletedTaskIds([]);
+      }
+    } catch (e) {
+      console.error('Failed to read localStorage:', e);
+    }
+  }, []);
+
+  const updateStars = (newStars: number) => {
+    setStars(newStars);
+    try {
+      localStorage.setItem(STORAGE_KEYS.STARS, newStars.toString());
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAdjustStars = (delta: number) => {
+    const nextStars = Math.max(0, stars + delta);
+    updateStars(nextStars);
+  };
+
+  const handleResetDailyTasks = () => {
+    setCompletedTaskIds([]);
+    try {
+      localStorage.setItem(STORAGE_KEYS.COMPLETED, JSON.stringify([]));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveProfile = (newProfile: ParentChildProfile) => {
+    setProfile(newProfile);
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(newProfile));
+    } catch (e) {
+      console.error(e);
+    }
+    setCurrentScreen(returnScreenAfterAuth);
+  };
+
+  const handleHeroSelect = (heroId: string) => {
+    setSelectedHeroId(heroId);
+    try {
+      localStorage.setItem(STORAGE_KEYS.HERO, heroId);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCompleteTask = (task: Task) => {
+    const isAlreadyCompleted = completedTaskIds.includes(task.id);
+
+    if (!isAlreadyCompleted) {
+      const nextStars = stars + 1;
+      updateStars(nextStars);
+
+      const nextCompleted = [...completedTaskIds, task.id];
+      setCompletedTaskIds(nextCompleted);
+      try {
+        localStorage.setItem(STORAGE_KEYS.COMPLETED, JSON.stringify(nextCompleted));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setCelebratingTask(task);
+    setCelebrationOpen(true);
+  };
+
+  const handleCloseCelebration = () => {
+    setCelebrationOpen(false);
+    // Trigger motivational message at the top right after the child takes the star!
+    const randomMsg = getRandomMotivationalMessage(profile?.childFirstName);
+    setMotivationalMessage(randomMsg);
+    setMotivationalTaskTitle(celebratingTask?.title);
+  };
+
+  const handleRedeemReward = (reward: Reward) => {
+    if (stars >= reward.cost) {
+      const nextStars = Math.max(0, stars - reward.cost);
+      updateStars(nextStars);
+
+      setRewardsList((prev) => {
+        const next = prev.map((r) =>
+          r.id === reward.id ? { ...r, redeemedCount: (r.redeemedCount || 0) + 1 } : r
+        );
+        try {
+          localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(next));
+        } catch (e) {
+          console.error(e);
+        }
+        return next;
+      });
+    }
+  };
+
+  // Custom Gift Request Handlers
+  const handleCreateCustomRequest = (
+    req: Omit<CustomRewardRequest, 'id' | 'createdAt' | 'status'>
+  ) => {
+    const newRequest: CustomRewardRequest = {
+      ...req,
+      id: `req-${Date.now()}`,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    const nextRequests = [newRequest, ...customRequests];
+    setCustomRequests(nextRequests);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_REQUESTS, JSON.stringify(nextRequests));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleApproveCustomRequest = (requestId: string, approvedCost: number) => {
+    const targetReq = customRequests.find((r) => r.id === requestId);
+    if (!targetReq) return;
+
+    // 1. Update request status to approved
+    const nextRequests = customRequests.map((r) =>
+      r.id === requestId
+        ? { ...r, status: 'approved' as const, approvedCost, reviewedAt: new Date().toISOString() }
+        : r
+    );
+    setCustomRequests(nextRequests);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_REQUESTS, JSON.stringify(nextRequests));
+    } catch (e) {
+      console.error(e);
+    }
+
+    // 2. Add or update as a custom Reward in the rewardsList
+    const customRewardId = `custom-reward-${requestId}`;
+    setRewardsList((prev) => {
+      const existingIndex = prev.findIndex(
+        (r) => r.customRequestId === requestId || r.id === customRewardId
+      );
+      let nextRewards: Reward[];
+      if (existingIndex >= 0) {
+        nextRewards = prev.map((r, i) =>
+          i === existingIndex
+            ? { ...r, cost: approvedCost, title: targetReq.title, icon: targetReq.icon }
+            : r
+        );
+      } else {
+        const newReward: Reward = {
+          id: customRewardId,
+          title: targetReq.title,
+          icon: targetReq.icon,
+          cost: approvedCost,
+          redeemedCount: 0,
+          isCustom: true,
+          customRequestId: requestId,
+        };
+        // Add at the beginning of the list for high visibility
+        nextRewards = [newReward, ...prev];
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(nextRewards));
+      } catch (e) {
+        console.error(e);
+      }
+      return nextRewards;
+    });
+  };
+
+  const handleRejectCustomRequest = (requestId: string) => {
+    const nextRequests = customRequests.map((r) =>
+      r.id === requestId
+        ? { ...r, status: 'rejected' as const, reviewedAt: new Date().toISOString() }
+        : r
+    );
+    setCustomRequests(nextRequests);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_REQUESTS, JSON.stringify(nextRequests));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDeleteCustomRequest = (requestId: string) => {
+    const nextRequests = customRequests.filter((r) => r.id !== requestId);
+    setCustomRequests(nextRequests);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_REQUESTS, JSON.stringify(nextRequests));
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Also remove from rewards if it was approved
+    setRewardsList((prev) => {
+      const nextRewards = prev.filter(
+        (r) => r.customRequestId !== requestId && r.id !== `custom-reward-${requestId}`
+      );
+      try {
+        localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(nextRewards));
+      } catch (e) {
+        console.error(e);
+      }
+      return nextRewards;
+    });
+  };
+
+  const pendingCustomRequestsCount = customRequests.filter((r) => r.status === 'pending').length;
+
+  return (
+    <div className="min-h-screen w-full bg-[#D8C6B7] text-[#2B1B15] font-sans antialiased" dir="rtl">
+      {currentScreen === 'welcome' && (
+        <WelcomeScreen
+          profile={profile}
+          onOpenAuth={() => {
+            setReturnScreenAfterAuth('heroes');
+            setCurrentScreen('parent_auth');
+          }}
+          onStart={() => {
+            if (!profile) {
+              setReturnScreenAfterAuth('heroes');
+              setCurrentScreen('parent_auth');
+            } else {
+              setCurrentScreen('heroes');
+            }
+          }}
+        />
+      )}
+
+      {currentScreen === 'parent_auth' && (
+        <ParentAuthScreen
+          initialProfile={profile}
+          onSaveProfile={handleSaveProfile}
+          onBack={profile ? () => setCurrentScreen(returnScreenAfterAuth) : () => setCurrentScreen('welcome')}
+        />
+      )}
+
+      {currentScreen === 'heroes' && (
+        <HeroesScreen
+          selectedHeroId={selectedHeroId}
+          onSelectHero={handleHeroSelect}
+          onConfirm={() => setCurrentScreen('home')}
+        />
+      )}
+
+      {currentScreen === 'home' && (
+        <HomeScreen
+          stars={stars}
+          selectedHeroId={selectedHeroId}
+          tasks={DAILY_TASKS}
+          completedTaskIds={completedTaskIds}
+          profile={profile}
+          onCompleteTask={handleCompleteTask}
+          onOpenExtraChallenges={() => setCurrentScreen('challenges')}
+          onOpenRewards={() => setCurrentScreen('rewards')}
+          onChangeHero={() => setCurrentScreen('heroes')}
+          onOpenParentAuth={() => {
+            setReturnScreenAfterAuth('home');
+            setCurrentScreen('parent_auth');
+          }}
+          onAdjustStars={handleAdjustStars}
+          onResetDailyTasks={handleResetDailyTasks}
+        />
+      )}
+
+      {currentScreen === 'challenges' && (
+        <ChallengesScreen
+          stars={stars}
+          completedTaskIds={completedTaskIds}
+          onCompleteTask={handleCompleteTask}
+          onBack={() => setCurrentScreen('home')}
+        />
+      )}
+
+      {currentScreen === 'rewards' && (
+        <RewardsScreen
+          stars={stars}
+          rewards={rewardsList}
+          customRequests={customRequests}
+          profile={profile}
+          onRedeemReward={handleRedeemReward}
+          onEditProfile={() => {
+            setReturnScreenAfterAuth('rewards');
+            setCurrentScreen('parent_auth');
+          }}
+          onBack={() => setCurrentScreen('home')}
+          onCreateCustomRequest={handleCreateCustomRequest}
+          onApproveCustomRequest={handleApproveCustomRequest}
+          onRejectCustomRequest={handleRejectCustomRequest}
+          onDeleteCustomRequest={handleDeleteCustomRequest}
+        />
+      )}
+
+      {/* Top Random Motivational Message Toast when child receives star and returns to tasks */}
+      <TopMotivationalToast
+        message={motivationalMessage}
+        taskTitle={motivationalTaskTitle}
+        onClose={() => setMotivationalMessage(null)}
+      />
+
+      <StarCelebrationModal
+        isOpen={celebrationOpen}
+        onClose={handleCloseCelebration}
+        taskTitle={celebratingTask?.title}
+        totalStars={stars}
+      />
+
+      {/* Discreet floating button for parents: زر صغير خالص للأهل */}
+      {(currentScreen === 'home' || currentScreen === 'challenges') && (
+        <button
+          onClick={() => {
+            playPopSound();
+            setShowParentModal(true);
+          }}
+          title="خيارات ولي الأمر"
+          className="fixed bottom-3 right-3 z-40 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center text-xs opacity-40 hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+        >
+          ⚙️
+          {pendingCustomRequestsCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-600 rounded-full border-2 border-white animate-pulse" />
+          )}
+        </button>
+      )}
+
+      {/* Parent Quick Controls Modal */}
+      {showParentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-xs rounded-3xl p-5 bg-[#FAF5EF] border-4 border-black text-center text-[#2B1B15] shadow-2xl animate-in zoom-in-95 duration-150 space-y-3">
+            <h4 className="text-xl font-black mb-1">⚙️ خيارات ولي الأمر</h4>
+            <p className="text-xs text-[#5C3224]">
+              يمكنك متابعة طلبات هدايا طفلك، أو إعادة تعيين مهام اليوم، أو ضبط رصيد النجوم يدوياً.
+            </p>
+
+            <div className="space-y-2 text-right">
+              {/* Review Custom Gift Requests Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  setShowParentModal(false);
+                  setShowParentRequestsModal(true);
+                }}
+                className="w-full py-2.5 px-3 rounded-xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-700 text-purple-950 font-black text-xs flex items-center justify-between cursor-pointer transition-transform active:scale-95 shadow-2xs"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">🎁</span>
+                  <span>طلبات الهدايا المقترحة من الطفل</span>
+                </div>
+                {pendingCustomRequestsCount > 0 ? (
+                  <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                    {pendingCustomRequestsCount} جديد 🔔
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-purple-800 font-bold">
+                    ({customRequests.length})
+                  </span>
+                )}
+              </button>
+
+              {/* Star adjustment */}
+              <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-black/20">
+                <span className="text-xs font-bold">النجوم الحالية:</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleAdjustStars(-1)}
+                    className="w-7 h-7 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg border border-red-300 cursor-pointer"
+                  >
+                    -1
+                  </button>
+                  <span className="font-black px-2">{stars}</span>
+                  <button
+                    onClick={() => handleAdjustStars(1)}
+                    className="w-7 h-7 bg-green-100 hover:bg-green-200 text-green-700 font-bold rounded-lg border border-green-300 cursor-pointer"
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => handleAdjustStars(5)}
+                    className="px-2 h-7 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold text-xs rounded-lg border border-amber-300 cursor-pointer"
+                  >
+                    +5 ⭐
+                  </button>
+                </div>
+              </div>
+
+              {/* Reset tasks */}
+              <button
+                onClick={() => {
+                  handleResetDailyTasks();
+                  setShowParentModal(false);
+                }}
+                className="w-full py-2.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold text-xs border border-orange-300 transition-colors cursor-pointer text-center"
+              >
+                🔄 إعادة تعيين مهام اليوم (يوم جديد)
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowParentModal(false)}
+              className="w-full py-2 bg-[#2B1B15] hover:bg-[#3D2619] text-white rounded-xl font-bold text-sm cursor-pointer mt-1"
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Global Parent Custom Rewards Review Modal */}
+      <ParentRewardRequestsModal
+        isOpen={showParentRequestsModal}
+        requests={customRequests}
+        onClose={() => setShowParentRequestsModal(false)}
+        onApproveRequest={handleApproveCustomRequest}
+        onRejectRequest={handleRejectCustomRequest}
+        onDeleteRequest={handleDeleteCustomRequest}
+      />
+    </div>
+  );
+}
+
+
+==================== FILE: src/index.css ====================
+
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Baloo Bhaijaan 2', 'Cairo', system-ui, sans-serif;
+    background-color: #C8B6A6;
+    color: #2F1E16;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom Wood Texture Button Effect */
+.wood-button {
+  background: linear-gradient(180deg, #CEB7A4 0%, #B89C86 50%, #9F836E 100%);
+  box-shadow: 
+    inset 0 2px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+    0 6px 12px rgba(60, 35, 20, 0.35);
+  border: 3px solid #6E4935;
+  position: relative;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
+}
+
+.wood-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 12px,
+    rgba(255, 255, 255, 0.04) 24px
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Comic / Card Drop Shadow */
+.comic-shadow {
+  box-shadow: 0px 5px 0px #000000;
+}
+
+.comic-shadow-sm {
+  box-shadow: 0px 3px 0px #000000;
+}
+
+.comic-shadow-lg {
+  box-shadow: 0px 8px 0px #000000;
+}
+
+/* Folded Corner Effect for "المزيد من التحديات" */
+.folded-corner-button {
+  position: relative;
+  background-color: #B5847B;
+  border-radius: 8px 8px 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.folded-corner-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 22px 22px 0 0;
+  border-color: #8E5C53 transparent transparent transparent;
+}
+
+/* Pulsing star animation */
+@keyframes starBounce {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(-6deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(4deg);
+  }
+  75% {
+    transform: scale(1.18) rotate(-3deg);
+  }
+}
+
+.animate-star-bounce {
+  animation: starBounce 2.5s infinite ease-in-out;
+}
+
+@keyframes sparkleSpin {
+  0% {
+    transform: scale(0.8) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) rotate(360deg);
+    opacity: 0.7;
+  }
+}
+
+.animate-sparkle {
+  animation: sparkleSpin 3s infinite linear;
+}
+
+/* Interactive Task Click & Complete Animations */
+@keyframes taskTapBounce {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.93) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.08) rotate(1.5deg);
+  }
+  75% {
+    transform: scale(0.97) rotate(-0.5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-task-pop {
+  animation: taskTapBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes starFloatUp {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  25% {
+    transform: translateY(-15px) scale(1.3);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(-38px) scale(1.1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-55px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.animate-star-float {
+  animation: starFloatUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes stampPop {
+  0% {
+    transform: scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-stamp-pop {
+  animation: stampPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes shrinkWidth {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+/* Star Counter Escalation & Celebration Animations */
+@keyframes gainFlyUp {
+  0% {
+    transform: translate(-50%, 6px) scale(0.4);
+    opacity: 0;
+  }
+  25% {
+    transform: translate(-50%, -10px) scale(1.3);
+    opacity: 1;
+  }
+  65% {
+    transform: translate(-50%, -22px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -36px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.animate-gain-fly-up {
+  animation: gainFlyUp 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes starNumPop {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  30% {
+    transform: scale(1.45) translateY(-3px);
+    color: #B45309;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+  }
+  60% {
+    transform: scale(1.2) translateY(-1px);
+    color: #92400E;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    color: #2B1B15;
+  }
+}
+
+.animate-star-num-pop {
+  animation: starNumPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes starPillPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8), 0 1px 2px rgba(0,0,0,0.1);
+  }
+  35% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.3), 0 2px 4px rgba(0,0,0,0.15);
+    border-color: #B45309;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), 0 1px 2px rgba(0,0,0,0.1);
+    border-color: #000000;
+  }
+}
+
+.animate-star-pill-pulse {
+  animation: starPillPulse 1s ease-out;
+}
+
+@keyframes starCelebrationSpin {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.45) rotate(-22deg); }
+  50% { transform: scale(1.3) rotate(20deg); }
+  75% { transform: scale(1.15) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-star-celebrate {
+  animation: starCelebrationSpin 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes sparkleBurst1 {
+  0% { transform: scale(0) translate(0, 0); opacity: 0; }
+  50% { transform: scale(1.4) translate(8px, -12px) rotate(45deg); opacity: 1; }
+  100% { transform: scale(0.4) translate(14px, -20px) rotate(90deg); opacity: 0; }
+}
+
+@keyframes sparkleBurst2 {
+  0% { transform: scale(0) translate(0, 0); opacity: 0; }
+  50% { transform: scale(1.3) translate(-10px, 8px) rotate(-30deg); opacity: 1; }
+  100% { transform: scale(0.4) translate(-16px, 14px) rotate(-60deg); opacity: 0; }
+}
+
+@keyframes sparkleBurst3 {
+  0% { transform: scale(0) translate(0, 0); opacity: 0; }
+  50% { transform: scale(1.3) translate(-8px, -10px) rotate(30deg); opacity: 1; }
+  100% { transform: scale(0.4) translate(-12px, -16px) rotate(60deg); opacity: 0; }
+}
+
+.animate-sparkle-burst-1 { animation: sparkleBurst1 0.9s ease-out forwards; }
+.animate-sparkle-burst-2 { animation: sparkleBurst2 0.9s ease-out forwards; }
+.animate-sparkle-burst-3 { animation: sparkleBurst3 0.9s ease-out forwards; }
+
+
+
+
+==================== FILE: src/types.ts ====================
+
+export type AcademicTab = 
+  | 'lesson_plans'      // تحضير الأنشطة والدروس
+  | 'behavior_guide'    // دليل تعديل السلوك والمشكلات السلوكية
+  | 'teaching_aids'     // بنك الوسائل التعليمية المبتكرة
+  | 'puppet_theatre'    // اسكريبتات مسرح العرائس والقصص
+  | 'rubrics_eval'      // استمارات ملاحظة وتقييم نمو الطفل
+  | 'study_summaries';  // ملخصات ومفاهيم مواد الكلية
+
+export type ActivityAgeGroup = '3-4' | '4-5' | '5-6';
+
+export type ActivityDomain = 
+  | 'linguistic'    // لغوي
+  | 'mathematical'  // رياضي / منطقي
+  | 'scientific'    // علمي واستكشافي
+  | 'artistic'      // فني وموسيقي
+  | 'motor'         // حركي / بدني
+  | 'social_emotional'; // اجتماعي ووجداني
+
+export interface LessonPlan {
+  id: string;
+  title: string;
+  unit: string;
+  ageGroup: ActivityAgeGroup;
+  domain: ActivityDomain;
+  durationMinutes: number;
+  behavioralObjectives: {
+    cognitive: string[]; // معرفي
+    psychomotor: string[]; // حركي / نفسي حركي
+    affective: string[]; // وجداني
+  };
+  teachingAids: string[];
+  introduction: string; // التهيئة ومثير الانتباه
+  steps: string[]; // خطوات تنفيذ النشاط
+  closing: string; // الغلق والتقويم
+  safetyNotes?: string;
+  tags: string[];
+}
+
+export interface BehaviorStrategy {
+  id: string;
+  problemTitle: string; // مثلاً: قلق الانفصال، العناد، العض، الخجل
+  ageCommon: string;
+  underlyingCauses: string[]; // الأسباب النفسية والدوافع
+  doList: string[]; // ماذا تفعل المعلمة؟
+  dontList: string[]; // احذري أن تفعلي!
+  storyIdea: string; // فكرة قصة علاجية قصيرة
+  cooperationWithFamily: string; // إرشاد ولي الأمر
+}
+
+export interface TeachingAid {
+  id: string;
+  title: string;
+  concept: string; // المفهوم الرياضي أو العلمي
+  materialsNeeded: string[]; // خامات بيئية بسيطة
+  howToMake: string[]; // طريقة الصنع خطوة بخطوة
+  howToUseInClass: string; // طريقة توظيفها في الركن
+  recyclableFriendly: boolean;
+  learningCorner: 'math' | 'reading' | 'science' | 'art' | 'dramatic_play';
+}
+
+export interface PuppetScript {
+  id: string;
+  title: string;
+  targetValue: string; // القيمة المستهدفة (الصدق، النظافة، المشاركة...)
+  characters: { name: string; puppetType: string; role: string }[];
+  dialogueLines: { speaker: string; text: string; emotion: string }[];
+  durationMinutes: number;
+}
+
+export interface DevelopmentalMilestone {
+  domain: string;
+  milestones: string[];
+  evaluationCriterion: string;
+}
+
+export type CharacterId = 'bondok' | 'basbousa' | 'ammi_felfel' | 'robot';
+
+export interface CartoonCharacter {
+  id: CharacterId;
+  name: string;
+  nameEn: string;
+  nickname: string;
+  avatar: string;
+  color: string;
+  textColor: string;
+  borderColor: string;
+  description: string;
+  catchphrase: string;
+  favoriteFood: string;
+  favoriteToy: string;
+  phrases: string[];
+}
+
+export interface SceneDialogue {
+  id: string;
+  characterId: CharacterId | 'narrator';
+  characterName: string;
+  text: string;
+  emotion: 'happy' | 'excited' | 'funny' | 'shocked' | 'thinking' | 'hungry' | 'proud';
+  soundEffect?: 'boing' | 'pop' | 'splat' | 'giggle' | 'whistle' | 'celebrate';
+}
+
+export interface SceneChoiceOption {
+  id: string;
+  text: string;
+  reactionText: string;
+  characterReactionId: CharacterId;
+  soundEffect?: 'boing' | 'pop' | 'celebrate' | 'whistle' | 'splat' | 'giggle';
+}
+
+export interface SceneChoice {
+  prompt: string;
+  helperText?: string;
+  options: SceneChoiceOption[];
+}
+
+export interface CartoonScene {
+  id: string;
+  title: string;
+  bgType: 'street' | 'kitchen' | 'playpark' | 'invention_lab';
+  dialogues: SceneDialogue[];
+  choice?: SceneChoice;
+  interactiveGame?: 'icecream' | 'tree_reveal';
+  tip?: string;
+}
+
+export interface CartoonEpisode {
+  id: string;
+  number: number;
+  title: string;
+  subtitle: string;
+  coverImage: string;
+  badge: string;
+  synopsis: string;
+  durationText: string;
+  starsReward: number;
+  scenes: CartoonScene[];
+}
+
+export interface SoundboardItem {
+  id: string;
+  characterId: CharacterId;
+  title: string;
+  quote: string;
+  emoji: string;
+  color: string;
+}
+
+export interface Hero {
+  id: string;
+  name: string;
+  title: string;
+  image: string;
+  color: string;
+  glowColor: string;
+  badge: string;
+  powerDescription: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon: string;
+  color: string;
+  textColor: string;
+  category: 'daily' | 'extra';
+  completed: boolean;
+  completedAt?: string;
+}
+
+export interface Reward {
+  id: string;
+  title: string;
+  icon: string;
+  cost: number;
+  redeemedCount: number;
+  isCustom?: boolean;
+  customRequestId?: string;
+  isPurchasableFromStore?: boolean;
+  priceEGP?: number;
+  shippingDays?: string;
+  storeDescription?: string;
+}
+
+export interface CustomRewardRequest {
+  id: string;
+  title: string;
+  icon: string;
+  proposedCost: number;
+  approvedCost?: number;
+  childMessage?: string;
+  childName?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  reviewedAt?: string;
+}
+
+export interface ParentChildProfile {
+  parentName: string;
+  parentContact?: string;
+  childFirstName: string;
+  childSecondName?: string;
+  city?: string;
+  postalAddress?: string;
+  registeredAt: string;
+}
+
+export interface GiftOrder {
+  id: string;
+  orderNumber: string;
+  rewardId: string;
+  rewardTitle: string;
+  rewardIcon: string;
+  starsUsed: number;
+  priceEGP: number;
+  shippingFeeEGP: number;
+  totalPriceEGP: number;
+  childFirstName: string;
+  childSecondName?: string;
+  parentName: string;
+  phone: string;
+  city: string;
+  postalAddress: string;
+  postalCode?: string;
+  paymentMethod: 'cod' | 'wallet' | 'instapay';
+  notes?: string;
+  status: 'pending' | 'shipped' | 'delivered';
+  createdAt: string;
+}
+
+
+
+==================== FILE: src/utils/audio.ts ====================
+
+// Bulletproof Audio Engine with Real Sound Synthesis, Direct Web Audio, and Resilient Voice Reader
+
+let audioCtx: AudioContext | null = null;
+let isMuted: boolean = false;
+
+export function getIsMuted(): boolean {
+  return isMuted;
+}
+
+export function toggleMute(): boolean {
+  isMuted = !isMuted;
+  if (isMuted) {
+    stopSpeaking();
+  }
+  return isMuted;
+}
+
+/**
+ * Initializes and unlocks AudioContext reliably on user gestures
+ */
+export function ensureAudioUnlocked(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const AudioCtxClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+
+    if (!AudioCtxClass) return null;
+
+    if (!audioCtx) {
+      audioCtx = new AudioCtxClass();
+    }
+
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    return audioCtx;
+  } catch (err) {
+    console.error('AudioContext init error:', err);
+    return null;
+  }
+}
+
+// Global click/touch listener to auto-unlock audio on any first interaction
+if (typeof window !== 'undefined') {
+  const unlockEvents = ['click', 'touchstart', 'touchend', 'keydown'];
+  const unlocker = () => {
+    ensureAudioUnlocked();
+    if (window.speechSynthesis && window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+  };
+  unlockEvents.forEach((evt) => {
+    window.addEventListener(evt, unlocker, { passive: true, once: false });
+  });
+}
+
+/**
+ * 1. Play Cartoon Spring Boing
+ */
+export function playBoingSound() {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(540, now + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(320, now + 0.32);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.36);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 2. Play Slide Whistle Sound
+ */
+export function playSlideWhistle(direction: 'up' | 'down' = 'up') {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    if (direction === 'up') {
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.32);
+    } else {
+      osc.frequency.setValueAtTime(1100, now);
+      osc.frequency.exponentialRampToValueAtTime(260, now + 0.32);
+    }
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.36);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 3. Play Cheerful Cartoon Pop
+ */
+export function playPopSound() {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, now);
+    osc.frequency.exponentialRampToValueAtTime(820, now + 0.05);
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.09);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 4. Play Cartoon Giggle
+ */
+export function playCartoonGiggle() {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const freqs = [620, 780, 920, 840, 1020];
+
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = now + idx * 0.07;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.065);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.07);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 5. Play Splat Sound
+ */
+export function playSplatSound() {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.14);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.17);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 6. Play Celebration Fanfare Chords
+ */
+export function playCelebrationSound() {
+  if (isMuted) return;
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const notes = [
+      { f: 523.25, t: 0.05, d: 0.14 },
+      { f: 659.25, t: 0.18, d: 0.14 },
+      { f: 783.99, t: 0.31, d: 0.16 },
+      { f: 1046.50, t: 0.48, d: 0.5 },
+    ];
+
+    notes.forEach((n) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(n.f, now + n.t);
+
+      gain.gain.setValueAtTime(0, now + n.t);
+      gain.gain.linearRampToValueAtTime(0.3, now + n.t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + n.t);
+      osc.stop(now + n.t + n.d);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export function playFanfareSound() {
+  playCelebrationSound();
+}
+
+/**
+ * Distinct, loud Cartoon Character Syllable Babble
+ * Guaranteed to produce clear, expressive sound in every browser via Web Audio API!
+ */
+export function playCartoonBabble(
+  character: 'bondok' | 'basbousa' | 'ammi_felfel' | 'robot',
+  syllablesCount: number = 6,
+  onEnd?: () => void
+) {
+  if (isMuted) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  const ctx = ensureAudioUnlocked();
+  if (!ctx) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  try {
+    const now = ctx.currentTime;
+    let basePitch = 480;
+    let waveType: OscillatorType = 'triangle';
+
+    if (character === 'bondok') {
+      basePitch = 500; // energetic rabbit
+      waveType = 'triangle';
+    } else if (character === 'basbousa') {
+      basePitch = 600; // cute smart cat
+      waveType = 'sine';
+    } else if (character === 'ammi_felfel') {
+      basePitch = 240; // jovial shopkeeper
+      waveType = 'sawtooth';
+    } else if (character === 'robot') {
+      basePitch = 340;
+      waveType = 'square';
+    }
+
+    const count = Math.min(Math.max(syllablesCount, 4), 10);
+    const duration = 0.11;
+
+    for (let i = 0; i < count; i++) {
+      const t = now + i * (duration * 0.96);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      const pitchOffset = Math.sin((i / count) * Math.PI) * 140 + (Math.random() * 60 - 30);
+      const freq = basePitch + pitchOffset;
+
+      osc.type = waveType;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.2, t + duration * 0.4);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.95, t + duration);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + duration + 0.02);
+    }
+
+    const totalMs = count * duration * 1000;
+    setTimeout(() => {
+      if (onEnd) onEnd();
+    }, totalMs + 40);
+  } catch (err) {
+    console.error(err);
+    if (onEnd) onEnd();
+  }
+}
+
+export type VoiceMode = 'cartoon_sfx' | 'natural_human';
+let activeVoiceMode: VoiceMode = 'cartoon_sfx';
+
+export function getVoiceMode(): VoiceMode {
+  return activeVoiceMode;
+}
+
+export function setVoiceMode(mode: VoiceMode) {
+  activeVoiceMode = mode;
+  stopSpeaking();
+}
+
+/**
+ * Universal Cartoon Voice Player
+ */
+export function speakCartoonDialogue(
+  text: string,
+  character: 'bondok' | 'basbousa' | 'ammi_felfel' | 'robot' = 'bondok',
+  onEnd?: () => void
+) {
+  if (isMuted) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  ensureAudioUnlocked();
+
+  if (activeVoiceMode === 'cartoon_sfx') {
+    const wordCount = text.trim().split(/\s+/).length;
+    const syllables = Math.min(Math.max(wordCount, 4), 10);
+    playCartoonBabble(character, syllables, onEnd);
+    return;
+  }
+
+  // If in 'natural_human' mode:
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    playCartoonBabble(character, 6, onEnd);
+    return;
+  }
+
+  try {
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const arVoice = voices.find(
+      (v) => v.lang.startsWith('ar') || v.lang.includes('EG') || v.lang.includes('SA')
+    );
+
+    if (arVoice) {
+      utterance.voice = arVoice;
+    }
+    utterance.lang = 'ar-EG';
+
+    if (character === 'bondok') {
+      utterance.pitch = 1.35;
+      utterance.rate = 1.1;
+    } else if (character === 'basbousa') {
+      utterance.pitch = 1.25;
+      utterance.rate = 1.0;
+    } else if (character === 'ammi_felfel') {
+      utterance.pitch = 0.95;
+      utterance.rate = 0.95;
+    }
+
+    utterance.onend = () => {
+      if (onEnd) onEnd();
+    };
+
+    utterance.onerror = () => {
+      // Fallback to cartoon babble if TTS fails or is blocked
+      playCartoonBabble(character, 5, onEnd);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.error(err);
+    playCartoonBabble(character, 5, onEnd);
+  }
+}
+
+export function stopSpeaking() {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+
+==================== FILE: src/data/appData.ts ====================
+
+import { Hero, Task, Reward } from '../types';
+import welcomeHeroImg from '../assets/images/welcome_hero_1790620668006.jpg';
+import heroBlueImg from '../assets/images/hero_blue_lightning_1790620683778.jpg';
+import heroPinkImg from '../assets/images/hero_pink_star_1790620696051.jpg';
+import heroGreenImg from '../assets/images/hero_green_tech_1790620706266.jpg';
+import heroPurpleImg from '../assets/images/hero_purple_cosmic_1790620716624.jpg';
+
+export const WELCOME_HERO_IMAGE = welcomeHeroImg;
+
+export const HEROES: Hero[] = [
+  {
+    id: 'hero-blue',
+    name: 'بطل البرق',
+    title: 'سرعة البرق وطاقة الضوء',
+    image: heroBlueImg,
+    color: '#00C3FF',
+    glowColor: 'rgba(0, 195, 255, 0.7)',
+    badge: '⚡',
+    powerDescription: 'يتحرك بسرعة البرق لإنجاز المهام فوراً',
+  },
+  {
+    id: 'hero-pink',
+    name: 'بطلة النجوم',
+    title: 'طاقة النجوم والأمل',
+    image: heroPinkImg,
+    color: '#FF2A85',
+    glowColor: 'rgba(255, 42, 133, 0.7)',
+    badge: '⭐',
+    powerDescription: 'تنشر السعادة والنشاط في كل مكان',
+  },
+  {
+    id: 'hero-green',
+    name: 'بطل التقنية والحماية',
+    title: 'ذكاء خارق ودرع متين',
+    image: heroGreenImg,
+    color: '#10B981',
+    glowColor: 'rgba(16, 185, 129, 0.7)',
+    badge: '🛡️',
+    powerDescription: 'يحل المشكلات بذكاء ويحمي النظام دائماً',
+  },
+  {
+    id: 'hero-purple',
+    name: 'بطلة الشجاعة',
+    title: 'عزيمة لا تقهر وقوة هادئة',
+    image: heroPurpleImg,
+    color: '#A855F7',
+    glowColor: 'rgba(168, 85, 247, 0.7)',
+    badge: '💎',
+    powerDescription: 'تواجه التحديات بشجاعة وهدوء فائق',
+  },
+];
+
+export const DAILY_TASKS: Task[] = [
+  {
+    id: 'tidy',
+    title: 'بطل الترتيب',
+    subtitle: 'أرتب غرفتي وألعابي وملابسي',
+    icon: '⭐',
+    color: '#92D2B8',
+    textColor: '#153C2D',
+    category: 'daily',
+    completed: false,
+  },
+  {
+    id: 'teeth',
+    title: 'بطل الأسنان',
+    subtitle: 'أغسل أسناني صباحاً ومساءً',
+    icon: '🦷',
+    color: '#98C9EA',
+    textColor: '#13354E',
+    category: 'daily',
+    completed: false,
+  },
+  {
+    id: 'study',
+    title: 'بطل العلم',
+    subtitle: 'أذاكر دروسي وأقرأ كتابي',
+    icon: '📚',
+    color: '#F6C174',
+    textColor: '#47280A',
+    category: 'daily',
+    completed: false,
+  },
+  {
+    id: 'health',
+    title: 'بطل الصحة',
+    subtitle: 'أتناول طعاماً صحياً ومغذياً',
+    icon: '💪',
+    color: '#FBE76A',
+    textColor: '#413508',
+    category: 'daily',
+    completed: false,
+  },
+  {
+    id: 'honesty',
+    title: 'بطل الصدق والأمانة',
+    subtitle: 'أقول الصدق دائماً وأحفظ الأمانة',
+    icon: '🤝',
+    color: '#DDA6A0',
+    textColor: '#461815',
+    category: 'daily',
+    completed: false,
+  },
+  {
+    id: 'calm',
+    title: 'بطل الهدوء والنظام',
+    subtitle: 'أتحلى بالهدوء وألتزم بالتعليمات',
+    icon: '🧘‍♂️',
+    color: '#C694F9',
+    textColor: '#33124E',
+    category: 'daily',
+    completed: false,
+  },
+];
+
+export const EXTRA_CHALLENGES: Task[] = [
+  {
+    id: 'extra-listen',
+    title: 'أسمع الكلام',
+    subtitle: '(بدون عناد)',
+    icon: '🛑',
+    color: '#96D4BC',
+    textColor: '#153C2D',
+    category: 'extra',
+    completed: false,
+  },
+  {
+    id: 'extra-calm-talk',
+    title: 'أتكلم بهدوء',
+    subtitle: '(بدون صراخ)',
+    icon: '🤫',
+    color: '#96CAEC',
+    textColor: '#13354E',
+    category: 'extra',
+    completed: false,
+  },
+  {
+    id: 'extra-truth',
+    title: 'أقول الصدق',
+    subtitle: '(لا أكذب أبداً)',
+    icon: '🤥',
+    color: '#F9E978',
+    textColor: '#413508',
+    category: 'extra',
+    completed: false,
+  },
+  {
+    id: 'extra-clean',
+    title: 'مكاني نظيف',
+    subtitle: '(لا أرمي القمامة)',
+    icon: '🗑️',
+    color: '#D7A3F6',
+    textColor: '#33124E',
+    category: 'extra',
+    completed: false,
+  },
+  {
+    id: 'extra-sleep',
+    title: 'أنام في ميعادي',
+    subtitle: '(لا أسهر طويلاً)',
+    icon: '🌙',
+    color: '#A6A4B8',
+    textColor: '#212130',
+    category: 'extra',
+    completed: false,
+  },
+  {
+    id: 'extra-turn',
+    title: 'أنتظر دوري',
+    subtitle: '(لا أقاطع المتحدث)',
+    icon: '🗣️',
+    color: '#F8A2B6',
+    textColor: '#491522',
+    category: 'extra',
+    completed: false,
+  },
+];
+
+export const REWARDS: Reward[] = [
+  {
+    id: 'r1',
+    title: 'قصة جديدة',
+    icon: '📚',
+    cost: 30,
+    redeemedCount: 0,
+  },
+  {
+    id: 'r2',
+    title: 'سهرة إضافية',
+    icon: '🌙',
+    cost: 20,
+    redeemedCount: 0,
+  },
+  {
+    id: 'r5',
+    title: 'نزهة مميزة',
+    icon: '🎡',
+    cost: 50,
+    redeemedCount: 0,
+  },
+  {
+    id: 'r6',
+    title: 'وسام البطل',
+    icon: '💖',
+    cost: 10,
+    redeemedCount: 0,
+  },
+  {
+    id: 'r7',
+    title: 'وقت تابلت',
+    icon: '📱',
+    cost: 20,
+    redeemedCount: 0,
+  },
+  {
+    id: 'r8',
+    title: 'لعبة جديدة',
+    icon: '🧸',
+    cost: 40,
+    redeemedCount: 0,
+  },
+];
+
+
+==================== FILE: src/data/motivationalMessages.ts ====================
+
+// Array of enthusiastic, culturally relatable superhero motivational messages for children
+export const MOTIVATIONAL_MESSAGES = [
+  'عاش يا بطل الأبطال! إنجاز خارق وممتاز! 🦸‍♂️⚡',
+  'الله عليك يا بطل! نجمة جديدة بتلمع في طريقك لأحلى هدية! ⭐🌟',
+  'تسلم إيدك يا بطل! فخورين بيك وبشطارتك وسرعتك! 👏🎉',
+  'برافو يا أسطورة! خطوة خارقة ومهمة تمت بنجاح! 🚀💪',
+  'وحش المهام! قوة خارقة وعزيمة حديدية! 🥇✨',
+  'يا عيني عليك يا بطل! استمر كدا دا أنت مفيش زيك أبداً! 💖🥳',
+  'إنجاز أسطوري! كل مهمة بتعملها بتقربك من هديتك المميزة! 🎁⭐',
+  'شطارة ملهاش حدود! بطلك الخارق بيسقفلك وفرحان بيك جداً! 🎈🦸‍♀️',
+  'عاش البطل الهمام! يلا على التحدي اللي بعده! 🔥🏆',
+  'أنت فخر العيلة وبطل اليوم الحقيقي! استمر يا بطل! 🌟👑',
+  'يا سلام عليك! طاقة أبطال متجددة لا تتوقف أبداً! ⚡🎯',
+  'كفو يا بطل! رفعت راسنا بإنجازك الرائع والمنظم! 🦾🌟',
+  'سوبر هيرو حقيقي! النجوم الذهبية تليق بيك وبشطارتك! ⭐🎊',
+  'ما شاء الله على الشطارة والالتزام العالي! كمل يا بطل! 🌈💖',
+  'أنت بطل تقدر على أي تحدي! شجاعة وإتقان ولا أروع! 🦁💪',
+  'سرعة البرق وطاقة النجوم اجتمعوا فيك! مبروك النجمة! ⚡⭐',
+];
+
+/**
+ * Returns a random motivational message, optionally customized with child's name
+ */
+export function getRandomMotivationalMessage(childName?: string): string {
+  const index = Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length);
+  const baseMessage = MOTIVATIONAL_MESSAGES[index];
+
+  if (!childName || !childName.trim()) {
+    return baseMessage;
+  }
+
+  const name = childName.trim();
+  // Customize message with child's name
+  return baseMessage.replace('يا بطل الأبطال', `يا ${name} يا بطل الأبطال`)
+                    .replace('يا بطل!', `يا ${name}!`)
+                    .replace('يا بطل ', `يا ${name} `)
+                    .replace('البطل الهمام', `البطل ${name}`);
+}
+
+
+==================== FILE: src/components/WelcomeScreen.tsx ====================
+
+import React from 'react';
+import { WELCOME_HERO_IMAGE } from '../data/appData';
+import { playPopSound } from '../utils/audio';
+
+interface WelcomeScreenProps {
+  onStart: () => void;
+  profile?: {
+    parentName: string;
+    childFirstName: string;
+    childSecondName?: string;
+  } | null;
+  onOpenAuth?: () => void;
+}
+
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
+  onStart,
+  profile,
+  onOpenAuth,
+}) => {
+  return (
+    <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D1BEAE] text-[#3D2619] overflow-hidden select-none">
+      
+      {/* Header Titles Area matching welcome.png */}
+      <div className="w-full max-w-sm pt-2 z-10 flex flex-col items-center">
+        
+        {/* Arabic Title with Yellow Crayon Star on its left */}
+        <div className="w-full flex items-center justify-center relative px-2">
+          {/* Yellow crayon star neatly on the top-left margin */}
+          <div className="absolute left-1 -top-1 select-none pointer-events-none">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#F8E16C" stroke="#D1B036" strokeWidth="1.5">
+              <polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5" />
+            </svg>
+          </div>
+
+          <h1 
+            className="text-5xl md:text-6xl font-extrabold tracking-wide text-[#542B21] drop-shadow-xs text-center"
+            style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+          >
+            عالم الأبطال
+          </h1>
+        </div>
+
+        {/* English Subtitle with the 3 doodle stars right beside it on the right side */}
+        <div className="w-full flex items-center justify-between px-3 mt-1 relative">
+          <p 
+            className="text-2xl md:text-3xl font-black italic tracking-wider text-[#5C3224]"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            A World of Heroes
+          </p>
+
+          {/* Outlined doodle stars placed beside 'A World of Heroes' on the right side */}
+          <div className="select-none pointer-events-none flex flex-col items-end -mt-1 mr-1">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2B1A13" strokeWidth="2.2" className="transform rotate-12">
+              <polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5" />
+            </svg>
+            <div className="flex gap-2 -mt-1 mr-1">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2B1A13" strokeWidth="2.2" className="transform -rotate-12">
+                <polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5" />
+              </svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2B1A13" strokeWidth="2.2" className="transform rotate-6">
+                <polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Center Hero Character Image (Completely clean with NO stars or sparkles overlapping the hero) */}
+      <div className="relative my-auto flex items-center justify-center max-w-sm w-full py-2">
+        <div className="relative group cursor-pointer transition-transform duration-300 hover:scale-103 active:scale-97">
+          <img
+            src={WELCOME_HERO_IMAGE}
+            alt="بطل عالم الأبطال"
+            referrerPolicy="no-referrer"
+            className="w-full max-h-[55vh] object-contain drop-shadow-[0_12px_24px_rgba(50,25,10,0.35)] rounded-2xl"
+          />
+        </div>
+      </div>
+
+      {/* Wooden Plank Start Button at Bottom */}
+      <div className="w-full max-w-xs pb-3 z-10 space-y-2.5">
+        <button
+          onClick={() => {
+            playPopSound();
+            onStart();
+          }}
+          className="wood-button w-full py-4 px-6 rounded-2xl text-center cursor-pointer transition-all duration-200 active:scale-95 group"
+        >
+          <span 
+            className="text-3xl md:text-4xl font-extrabold text-[#52291E] tracking-wider block group-hover:scale-105 transition-transform"
+            style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+          >
+            ابدأ المغامرة
+          </span>
+        </button>
+
+        {onOpenAuth && (
+          <button
+            onClick={() => {
+              playPopSound();
+              onOpenAuth();
+            }}
+            className="w-full py-2.5 px-4 rounded-xl bg-white/85 hover:bg-white border-2 border-[#3D2619] text-xs font-black text-[#3D2619] flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-transform active:scale-95"
+          >
+            <span>👩‍👦</span>
+            {profile ? (
+              <span>
+                البطل المسجل: {profile.childFirstName} {profile.childSecondName || ''} (تعديل بيانات الأم ✎)
+              </span>
+            ) : (
+              <span>تسجيل الدخول للأم وكتابة اسم الطفل ✍️</span>
+            )}
+          </button>
+        )}
+      </div>
+
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/ParentAuthScreen.tsx ====================
+
+import React, { useState } from 'react';
+import { ParentChildProfile } from '../types';
+import { playPopSound } from '../utils/audio';
+
+interface ParentAuthScreenProps {
+  initialProfile: ParentChildProfile | null;
+  onSaveProfile: (profile: ParentChildProfile) => void;
+  onBack?: () => void;
+}
+
+export const ParentAuthScreen: React.FC<ParentAuthScreenProps> = ({
+  initialProfile,
+  onSaveProfile,
+  onBack,
+}) => {
+  const [parentName, setParentName] = useState(initialProfile?.parentName || '');
+  const [parentContact, setParentContact] = useState(initialProfile?.parentContact || '');
+  const [childFirstName, setChildFirstName] = useState(initialProfile?.childFirstName || '');
+  const [childSecondName, setChildSecondName] = useState(initialProfile?.childSecondName || '');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    playPopSound();
+
+    if (!parentName.trim()) {
+      setErrorMsg('يرجى كتابة اسم الأم لتسجيل الدخول 🌸');
+      return;
+    }
+    if (!childFirstName.trim()) {
+      setErrorMsg('يرجى كتابة اسم الطفل الأول (إجباري) 🦸‍♂️');
+      return;
+    }
+
+    setErrorMsg('');
+    const newProfile: ParentChildProfile = {
+      parentName: parentName.trim(),
+      parentContact: parentContact.trim() || undefined,
+      childFirstName: childFirstName.trim(),
+      childSecondName: childSecondName.trim() || undefined,
+      registeredAt: initialProfile?.registeredAt || new Date().toISOString(),
+    };
+
+    onSaveProfile(newProfile);
+  };
+
+  return (
+    <div
+      className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D3BEAF] text-[#2B1B15] select-none overflow-y-auto"
+      dir="rtl"
+    >
+      {/* Top Header */}
+      <div className="w-full max-w-md pt-1 pb-3 text-center">
+        {onBack && (
+          <div className="flex justify-start mb-2">
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound();
+                onBack();
+              }}
+              className="text-xs bg-white/80 hover:bg-white text-[#2B1B15] px-3 py-1 rounded-full border border-black/30 font-bold cursor-pointer"
+            >
+              رجوع ↩
+            </button>
+          </div>
+        )}
+
+        <div className="inline-flex items-center justify-center gap-2 bg-amber-100 border-2 border-black rounded-2xl px-4 py-1.5 shadow-xs mb-2">
+          <span className="text-xl">👩‍👧‍👦</span>
+          <span className="text-sm font-black text-[#4A2511]">
+            بوابة تسجيل الدخول (تملأها الأم)
+          </span>
+        </div>
+
+        <h1
+          className="text-3xl md:text-4xl font-extrabold text-[#231510] tracking-wide drop-shadow-xs"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          تسجيل دخول الأم والبطل
+        </h1>
+        <p className="text-xs md:text-sm font-bold text-[#5C3224] mt-1">
+          سجّلي بياناتك واسم طفلك لحفظ نجومه وتشجيعه على المهام اليومية في عالم الأبطال ⭐🦸‍♂️
+        </p>
+      </div>
+
+      {/* Login Form Card */}
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-[#FFF8F0] rounded-3xl p-5 border-[3px] border-black comic-shadow space-y-4 my-auto"
+      >
+        {errorMsg && (
+          <div className="bg-rose-100 border-2 border-rose-600 text-rose-900 rounded-2xl p-3 text-xs font-black text-center">
+            ⚠️ {errorMsg}
+          </div>
+        )}
+
+        {/* Section 1: Child Name (First Required, Second Optional) */}
+        <div className="bg-amber-50/90 border-2 border-dashed border-amber-700/50 rounded-2xl p-3.5 space-y-3">
+          <div className="flex items-center gap-1.5 text-sm font-black text-[#3D2018]">
+            <span>🦸‍♂️</span>
+            <span>بيانات البطل الصغير:</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Child First Name - Required */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1">
+                اسم الطفل الأول <span className="text-rose-600 font-black">(إجباري *)</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={childFirstName}
+                onChange={(e) => setChildFirstName(e.target.value)}
+                placeholder="مثال: آدم / مريم"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-black text-sm font-bold text-[#2B1B15] placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+
+            {/* Child Second Name - Optional */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1">
+                الاسم الثاني للطفل <span className="text-emerald-700 font-bold">(اختياري)</span>
+              </label>
+              <input
+                type="text"
+                value={childSecondName}
+                onChange={(e) => setChildSecondName(e.target.value)}
+                placeholder="اسم الأب أو العائلة (اختياري)"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-black/70 text-sm font-bold text-[#2B1B15] placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Mother Login Info */}
+        <div className="bg-sky-50/70 border-2 border-dashed border-sky-700/40 rounded-2xl p-3.5 space-y-3">
+          <div className="flex items-center gap-1.5 text-sm font-black text-[#13354E]">
+            <span>👩‍👦</span>
+            <span>بيانات الأم:</span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-black text-[#2B1B15] mb-1">
+              اسم الأم / ولي الأمر <span className="text-rose-600">(إجباري *)</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={parentName}
+              onChange={(e) => setParentName(e.target.value)}
+              placeholder="اكتبي اسمك هنا (لتسجيل الحساب)"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-black text-sm font-bold text-[#2B1B15] placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black text-[#2B1B15] mb-1">
+              رقم الموبايل أو وسيلة التواصل <span className="text-emerald-700 font-bold">(اختياري)</span>
+            </label>
+            <input
+              type="text"
+              value={parentContact}
+              onChange={(e) => setParentContact(e.target.value)}
+              placeholder="مثال: 010xxxxxxxx (اختياري)"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-black/70 text-sm font-bold text-[#2B1B15] placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full py-3.5 px-6 rounded-2xl bg-[#D68868] hover:bg-[#CC7A58] active:scale-95 transition-all text-[#2B1B15] font-black text-xl flex items-center justify-center gap-2 border-[3px] border-black comic-shadow cursor-pointer"
+        >
+          <span>✨</span>
+          <span>حفظ وتسجيل الدخول للمغامرة</span>
+        </button>
+      </form>
+
+      {/* Footer note */}
+      <div className="w-full max-w-md pt-3 text-center">
+        <p className="text-[11px] font-bold text-[#5C3224]">
+          🔒 جميع البيانات تُحفظ محلياً على جهازك لتشجيع بطلك ومتابعة نجومه.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/HeroesScreen.tsx ====================
+
+import React from 'react';
+import { HEROES } from '../data/appData';
+import { Hero } from '../types';
+import { playPopSound } from '../utils/audio';
+
+interface HeroesScreenProps {
+  selectedHeroId: string;
+  onSelectHero: (heroId: string) => void;
+  onConfirm: () => void;
+}
+
+export const HeroesScreen: React.FC<HeroesScreenProps> = ({
+  selectedHeroId,
+  onSelectHero,
+  onConfirm,
+}) => {
+  const currentHero = HEROES.find((h) => h.id === selectedHeroId) || HEROES[0];
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D3BEAF] text-[#2B1B15] overflow-y-auto select-none">
+      
+      {/* Title with decorative stars directly beside كلمة الخارق */}
+      <div className="w-full max-w-md flex items-center justify-center px-2 pt-2 text-center">
+        <h1 
+          className="text-4xl md:text-5xl font-extrabold text-[#231510] tracking-wide inline-flex items-center justify-center gap-2"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          <span>اختر بطلك الخارق</span>
+          <span className="inline-flex items-center gap-1 text-yellow-500 text-2xl md:text-3xl animate-pulse select-none">
+            <span>✨</span>
+            <span>⭐</span>
+          </span>
+        </h1>
+      </div>
+
+      {/* Hero Cards Grid: 2x2 exact layout like heroes.png */}
+      <div className="w-full max-w-sm my-auto py-4">
+        <div className="grid grid-cols-2 gap-4">
+          {HEROES.map((hero: Hero) => {
+            const isSelected = hero.id === selectedHeroId;
+
+            return (
+              <div
+                key={hero.id}
+                onClick={() => {
+                  playPopSound();
+                  onSelectHero(hero.id);
+                }}
+                className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 transform active:scale-95 ${
+                  isSelected
+                    ? 'ring-4 ring-[#2B1B15] scale-102 shadow-[0_8px_20px_rgba(0,0,0,0.35)]'
+                    : 'hover:scale-101 shadow-md opacity-90 hover:opacity-100'
+                }`}
+                style={{
+                  border: isSelected ? '4px solid #C47E64' : '4px solid #C47E64',
+                  backgroundColor: '#0F1115',
+                }}
+              >
+                {/* Hero 3D Render Image */}
+                <div className="relative aspect-square w-full overflow-hidden bg-black">
+                  <img
+                    src={hero.image}
+                    alt={hero.name}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-108"
+                  />
+
+                  {/* Active selection checkmark badge */}
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg border-2 border-white animate-in zoom-in-75 duration-200">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* Hero Emblem overlay badge at bottom-left */}
+                  <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-xs text-xs px-2 py-0.5 rounded-full text-white font-bold border border-white/20">
+                    {hero.badge}
+                  </div>
+                </div>
+
+                {/* Hero Name Banner */}
+                <div 
+                  className="py-1.5 px-2 text-center font-bold text-sm transition-colors text-white"
+                  style={{
+                    backgroundColor: isSelected ? '#3D2018' : '#261510',
+                  }}
+                >
+                  <p className="truncate">{hero.name}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Selected Hero Info snippet */}
+        <div className="mt-3 text-center bg-white/40 border border-[#C47E64]/40 rounded-xl py-1.5 px-3">
+          <p className="text-xs font-semibold text-[#542F24]">
+            قوة {currentHero.name}: <span className="font-bold text-[#2B1B15]">{currentHero.powerDescription}</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Start Button: يلا نبدأ ✨ matching heroes.png */}
+      <div className="w-full max-w-xs pb-4">
+        <button
+          onClick={() => {
+            playPopSound();
+            onConfirm();
+          }}
+          className="w-full py-3.5 px-6 rounded-2xl bg-[#D68868] hover:bg-[#CC7A58] active:scale-95 transition-all text-[#2B1B15] font-black text-3xl flex items-center justify-center gap-3 border-[3px] border-[#2B1B15] comic-shadow cursor-pointer group"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          <span className="text-yellow-300 text-3xl group-hover:scale-125 transition-transform">
+            ✨
+          </span>
+          <span>يلا نبدأ</span>
+        </button>
+      </div>
+
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/HomeScreen.tsx ====================
+
+import React from 'react';
+import { HEROES } from '../data/appData';
+import { Task, Hero, ParentChildProfile } from '../types';
+import { playPopSound } from '../utils/audio';
+
+interface HomeScreenProps {
+  stars: number;
+  selectedHeroId: string;
+  tasks: Task[];
+  completedTaskIds: string[];
+  profile?: ParentChildProfile | null;
+  onCompleteTask: (task: Task) => void;
+  onOpenExtraChallenges: () => void;
+  onOpenRewards: () => void;
+  onChangeHero: () => void;
+  onOpenParentAuth?: () => void;
+  onAdjustStars?: (delta: number) => void;
+  onResetDailyTasks?: () => void;
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  stars,
+  selectedHeroId,
+  tasks,
+  completedTaskIds,
+  profile,
+  onCompleteTask,
+  onOpenExtraChallenges,
+  onOpenRewards,
+  onChangeHero,
+  onOpenParentAuth,
+  onAdjustStars,
+  onResetDailyTasks,
+}) => {
+  const currentHero: Hero = HEROES.find((h) => h.id === selectedHeroId) || HEROES[0];
+  const [animatingTaskId, setAnimatingTaskId] = React.useState<string | null>(null);
+  const [showParentControls, setShowParentControls] = React.useState<boolean>(false);
+
+  // Animated star counter state for interactive escalation
+  const [displayedStars, setDisplayedStars] = React.useState<number>(stars);
+  const [isIncrementing, setIsIncrementing] = React.useState<boolean>(false);
+  const [starGainDelta, setStarGainDelta] = React.useState<number | null>(null);
+  const [showSparkles, setShowSparkles] = React.useState<boolean>(false);
+  const prevStarsRef = React.useRef<number>(stars);
+
+  React.useEffect(() => {
+    if (stars > prevStarsRef.current) {
+      const delta = stars - prevStarsRef.current;
+      setStarGainDelta(delta);
+      setIsIncrementing(true);
+      setShowSparkles(true);
+
+      // Stepping counter up smoothly so the child sees the numbers climbing
+      const startVal = prevStarsRef.current;
+      const targetVal = stars;
+      const stepDuration = Math.min(80, Math.max(30, 400 / delta));
+      let currentVal = startVal;
+
+      const interval = setInterval(() => {
+        currentVal += 1;
+        setDisplayedStars(currentVal);
+        if (currentVal >= targetVal) {
+          clearInterval(interval);
+        }
+      }, stepDuration);
+
+      const resetTimer = setTimeout(() => {
+        setIsIncrementing(false);
+        setStarGainDelta(null);
+        setShowSparkles(false);
+      }, 1300);
+
+      prevStarsRef.current = stars;
+      return () => {
+        clearInterval(interval);
+        clearTimeout(resetTimer);
+      };
+    } else {
+      setDisplayedStars(stars);
+      prevStarsRef.current = stars;
+    }
+  }, [stars]);
+
+  const childDisplayName = profile
+    ? `${profile.childFirstName}${profile.childSecondName ? ` ${profile.childSecondName}` : ''}`
+    : '';
+
+  const handleTaskClick = (task: Task) => {
+    setAnimatingTaskId(task.id);
+    setTimeout(() => {
+      setAnimatingTaskId((prev) => (prev === task.id ? null : prev));
+    }, 700);
+    onCompleteTask(task);
+  };
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D8C6B7] text-[#2B1B15] select-none">
+      
+      {/* Top Header matching home.png */}
+      <div className="w-full max-w-sm flex items-center justify-between gap-2 pt-1 pb-3">
+        {/* Star Counter Pill on Left with Interactive Escalation */}
+        <div
+          className={`relative flex items-center gap-1.5 bg-white/95 border-[2.5px] rounded-full px-3.5 py-1.5 shadow-sm transition-all duration-300 ${
+            isIncrementing ? 'animate-star-pill-pulse scale-105 border-amber-600' : 'border-black'
+          }`}
+        >
+          {/* Floating +N Stars badge animation */}
+          {starGainDelta !== null && starGainDelta > 0 && (
+            <div
+              key={`gain-${displayedStars}`}
+              className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-amber-400 text-amber-950 font-black text-xs px-2.5 py-0.5 rounded-full border-2 border-black comic-shadow-sm pointer-events-none z-30 animate-gain-fly-up whitespace-nowrap shadow-md"
+            >
+              <span>+{starGainDelta}</span>
+              <span className="text-sm">⭐</span>
+            </div>
+          )}
+
+          {/* Sparkles around pill */}
+          {showSparkles && (
+            <div className="absolute inset-0 pointer-events-none z-20">
+              <span className="absolute -top-2 -right-1 text-sm animate-sparkle-burst-1">✨</span>
+              <span className="absolute -bottom-2 -left-1 text-xs animate-sparkle-burst-2">🌟</span>
+              <span className="absolute -top-1 -left-2 text-xs animate-sparkle-burst-3">⭐</span>
+            </div>
+          )}
+
+          {/* Animated Ascending Number */}
+          <span
+            key={displayedStars}
+            className={`text-2xl font-black text-[#2B1B15] tracking-wider min-w-[28px] text-center inline-block ${
+              isIncrementing ? 'animate-star-num-pop' : ''
+            }`}
+          >
+            {displayedStars}
+          </span>
+
+          {/* Glowing smiling star icon */}
+          <div
+            className={`relative w-7 h-7 flex items-center justify-center ${
+              isIncrementing ? 'animate-star-celebrate' : 'animate-star-bounce'
+            }`}
+          >
+            <svg width="28" height="28" viewBox="0 0 100 100">
+              <polygon
+                points="50,5 64,34 96,39 73,62 78,94 50,79 22,94 27,62 4,39 36,34"
+                fill="#FFD200"
+                stroke="#E5A100"
+                strokeWidth="4"
+              />
+              <circle cx="43" cy="46" r="3.5" fill="#2B1810" />
+              <circle cx="57" cy="46" r="3.5" fill="#2B1810" />
+              <path d="M 45 54 Q 50 60 55 54" fill="none" stroke="#2B1810" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          {/* Tiny Parent Quick Controls Button */}
+          <button
+            onClick={() => {
+              playPopSound();
+              setShowParentControls(true);
+            }}
+            title="تحكم الأهل: تعديل النجوم وإعادة مهام اليوم"
+            className="w-5 h-5 rounded-full bg-amber-200 hover:bg-amber-300 border border-black/70 flex items-center justify-center text-[10px] cursor-pointer transition-transform active:scale-90 mr-0.5 shadow-2xs"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        {/* Center Child Hero Name & Mother Account Button */}
+        {onOpenParentAuth && (
+          <button
+            onClick={() => {
+              playPopSound();
+              onOpenParentAuth();
+            }}
+            className="flex flex-col items-center bg-white/85 hover:bg-white border-2 border-black rounded-2xl px-3 py-1 shadow-xs cursor-pointer transition-transform active:scale-95"
+            title="بيانات دخول الأم واسم الطفل"
+          >
+            <span className="text-xs font-black text-[#2B1B15] truncate max-w-[140px]">
+              {childDisplayName ? `🦸‍♂️ البطل ${childDisplayName}` : '👩‍👦 تسجيل اسم البطل'}
+            </span>
+            <span className="text-[10px] font-bold text-[#5C3224]">
+              {profile?.parentName ? `ماما ${profile.parentName} ✎` : 'دخول الأم ✎'}
+            </span>
+          </button>
+        )}
+
+        {/* Hero Avatar with Ink Ring Border on Right + Return/Change Badge */}
+        <button
+          onClick={() => {
+            playPopSound();
+            onChangeHero();
+          }}
+          title="الرجوع لشاشة الأبطال واختيار بطل آخر"
+          className="relative group cursor-pointer focus:outline-hidden"
+        >
+          {/* Clean circular hero avatar */}
+          <div className="relative w-14 h-14 rounded-full overflow-hidden border-[2.5px] border-white shadow-md ring-2 ring-black/30 transition-transform group-hover:scale-105 active:scale-95 bg-white">
+            <img
+              src={currentHero.image}
+              alt={currentHero.name}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
+
+          {/* Clear Return/Switch Hero Badge on the Avatar corner */}
+          <div 
+            className="absolute -bottom-1 -left-1 bg-amber-300 hover:bg-amber-400 text-[#2B1B15] w-6 h-6 rounded-full border-2 border-black flex items-center justify-center shadow-xs transition-transform group-hover:scale-110"
+            title="تغيير البطل"
+          >
+            <span className="text-xs font-black leading-none">↩</span>
+          </div>
+        </button>
+      </div>
+
+      {/* 6 Main Hero Daily Habit Cards matching home.png */}
+      <div className="w-full max-w-sm my-auto py-2">
+        <div className="grid grid-cols-2 gap-4">
+          {tasks.map((task) => {
+            const isCompleted = completedTaskIds.includes(task.id);
+            const isAnimating = animatingTaskId === task.id;
+
+            return (
+              <button
+                key={task.id}
+                onClick={() => handleTaskClick(task)}
+                className={`relative flex flex-col items-center justify-center min-h-[125px] p-3 rounded-3xl border-[2.5px] border-dashed border-black transition-all duration-200 cursor-pointer ${
+                  isAnimating ? 'animate-task-pop ring-4 ring-yellow-400 scale-105' : 'active:scale-95'
+                } ${
+                  isCompleted
+                    ? 'ring-3 ring-amber-400/80 shadow-md'
+                    : 'hover:scale-102 hover:shadow-sm'
+                }`}
+                style={{
+                  backgroundColor: task.color,
+                  color: task.textColor,
+                }}
+              >
+                {/* Floating Star Animation when clicked */}
+                {isAnimating && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 animate-star-float flex items-center gap-1 bg-yellow-300 text-[#2B1B15] text-xs font-black px-2.5 py-0.5 rounded-full border border-black shadow-lg">
+                    <span>+1</span>
+                    <span>⭐</span>
+                    <span>بطل!</span>
+                  </div>
+                )}
+
+                {/* Completed Stamp or Badge */}
+                {isCompleted && (
+                  <div className="absolute top-2 right-2 bg-amber-400 text-[#2B1B15] rounded-full px-1.5 py-0.5 text-xs font-black border border-black shadow-xs flex items-center gap-0.5 animate-stamp-pop">
+                    <span>تم</span>
+                    <span>✓</span>
+                  </div>
+                )}
+
+                {/* 1 Star reward indication per user instruction: "على كل مهمة نجمة واحدة بس" */}
+                <div className="absolute top-2 left-2 text-[11px] font-bold opacity-80 flex items-center gap-0.5">
+                  <span>+1</span>
+                  <span>⭐</span>
+                </div>
+
+                {/* Card Title & Icon matching home.png */}
+                <div className="text-center mt-2 flex flex-col items-center justify-center gap-1">
+                  <span 
+                    className="text-xl md:text-2xl font-black leading-tight drop-shadow-xs"
+                    style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+                  >
+                    {task.title}
+                  </span>
+                  <span className={`text-3xl filter drop-shadow-xs select-none mt-0.5 transition-transform duration-300 ${
+                    isAnimating ? 'scale-130 rotate-12' : ''
+                  }`}>
+                    {task.icon}
+                  </span>
+                </div>
+
+                {/* Subtitle / guidance hint */}
+                {task.subtitle && (
+                  <p className="text-[10px] text-center font-medium opacity-75 mt-1 line-clamp-1">
+                    {task.subtitle}
+                  </p>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Action Buttons matching home.png */}
+      <div className="w-full max-w-sm pt-4 pb-2 flex items-center justify-between gap-3">
+        {/* Left: Kraft paper dashed button: هدايا الأبطال 🎉 🧸 */}
+        <button
+          onClick={() => {
+            playPopSound();
+            onOpenRewards();
+          }}
+          className="flex-1 py-2 px-3 rounded-xl bg-[#BEA38B] hover:bg-[#B3967C] active:scale-95 transition-all border-[2px] border-dashed border-black cursor-pointer text-center relative shadow-sm"
+        >
+          <div className="text-base font-extrabold text-[#231510] leading-tight">
+            هدايا الأبطال
+          </div>
+          <div className="text-lg flex items-center justify-center gap-1 mt-0.5">
+            <span>🎉</span>
+            <span>🧸</span>
+          </div>
+        </button>
+
+        {/* Right: Folded Corner Mauve Button: المزيد من التحديات ⬅️ */}
+        <button
+          onClick={() => {
+            playPopSound();
+            onOpenExtraChallenges();
+          }}
+          className="flex-1 folded-corner-button py-3 px-4 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-white font-extrabold text-lg shadow-md"
+          style={{
+            backgroundColor: '#B5847B',
+          }}
+        >
+          <span className="text-base inline-flex items-center justify-center bg-[#5F8FA6] p-1 rounded-sm text-white">
+            ⬅️
+          </span>
+          <span className="text-sm md:text-base font-black text-[#20100C]">
+            المزيد من التحديات
+          </span>
+        </button>
+      </div>
+
+      {/* Small Parent Quick Controls Modal */}
+      {showParentControls && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
+          <div className="w-full max-w-xs rounded-3xl p-5 bg-[#FFF8F0] border-[3px] border-black comic-shadow text-center space-y-3.5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-black/15 pb-2">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#2B1B15]">
+                <span>⚙️</span>
+                <span>تحكم الأهل السريع</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowParentControls(false)}
+                className="w-6 h-6 rounded-full bg-stone-200 hover:bg-stone-300 border border-black text-xs font-black cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="text-xs font-bold text-[#5C3224]">
+              الرصيد الحالي: <span className="font-black text-amber-900 text-sm">{stars} ⭐</span>
+            </div>
+
+            {/* Quick Star Adjustment Buttons: +1, -1, +5 */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  onAdjustStars?.(1);
+                }}
+                className="py-2.5 px-1 rounded-xl bg-emerald-100 hover:bg-emerald-200 border-2 border-emerald-700 font-black text-xs text-emerald-950 cursor-pointer transition-transform active:scale-95 shadow-2xs"
+              >
+                +١ نجمة ⭐
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  onAdjustStars?.(-1);
+                }}
+                className="py-2.5 px-1 rounded-xl bg-rose-100 hover:bg-rose-200 border-2 border-rose-700 font-black text-xs text-rose-950 cursor-pointer transition-transform active:scale-95 shadow-2xs"
+              >
+                -١ نجمة ❌
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  onAdjustStars?.(5);
+                }}
+                className="py-2.5 px-1 rounded-xl bg-amber-200 hover:bg-amber-300 border-2 border-amber-700 font-black text-xs text-amber-950 cursor-pointer transition-transform active:scale-95 shadow-2xs"
+              >
+                +٥ نجوم 🌟
+              </button>
+            </div>
+
+            {/* Reset Today's Tasks */}
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound();
+                onResetDailyTasks?.();
+                setShowParentControls(false);
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-sky-100 hover:bg-sky-200 border-2 border-sky-700 text-sky-950 font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-transform active:scale-95 shadow-2xs"
+            >
+              <span>🔄</span>
+              <span>إعادة مهام اليوم (تصفير المهام)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowParentControls(false)}
+              className="w-full py-2 rounded-xl bg-stone-200 hover:bg-stone-300 font-bold text-xs text-[#2B1B15] cursor-pointer"
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/ChallengesScreen.tsx ====================
+
+import React from 'react';
+import { EXTRA_CHALLENGES } from '../data/appData';
+import { Task } from '../types';
+import { playPopSound } from '../utils/audio';
+
+interface ChallengesScreenProps {
+  stars: number;
+  completedTaskIds: string[];
+  onCompleteTask: (task: Task) => void;
+  onBack: () => void;
+}
+
+export const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
+  stars,
+  completedTaskIds,
+  onCompleteTask,
+  onBack,
+}) => {
+  const [animatingChallengeId, setAnimatingChallengeId] = React.useState<string | null>(null);
+
+  const handleChallengeClick = (challenge: Task) => {
+    setAnimatingChallengeId(challenge.id);
+    setTimeout(() => {
+      setAnimatingChallengeId((prev) => (prev === challenge.id ? null : prev));
+    }, 700);
+    onCompleteTask(challenge);
+  };
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D8C6B7] text-[#2B1B15] select-none">
+      
+      {/* Header matching challenges.png: تحديات الأبطال الإضافية ⭐ */}
+      <div className="w-full max-w-sm pt-2 pb-3 text-center">
+        <div className="flex items-center justify-between px-2 mb-2">
+          {/* Back button shortcut & star counter */}
+          <button
+            onClick={() => {
+              playPopSound();
+              onBack();
+            }}
+            className="text-xs bg-white/70 hover:bg-white text-[#2B1B15] px-2.5 py-1 rounded-full border border-black/30 font-bold cursor-pointer"
+          >
+            رجوع ↩
+          </button>
+          <div className="flex items-center gap-1.5 bg-white/80 border border-black/30 rounded-full px-3 py-0.5 text-sm font-black">
+            <span>{stars}</span>
+            <span>⭐</span>
+          </div>
+        </div>
+
+        <h1 
+          className="text-3xl md:text-4xl font-extrabold text-[#231510] flex items-center justify-center gap-2 drop-shadow-xs"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          <span className="text-yellow-400 text-3xl">⭐</span>
+          <span>تحديات الأبطال الإضافية</span>
+        </h1>
+      </div>
+
+      {/* 6 Additional Habit Cards matching challenges.png */}
+      <div className="w-full max-w-sm my-auto py-2">
+        <div className="grid grid-cols-2 gap-4">
+          {EXTRA_CHALLENGES.map((challenge) => {
+            const isCompleted = completedTaskIds.includes(challenge.id);
+            const isAnimating = animatingChallengeId === challenge.id;
+
+            return (
+              <button
+                key={challenge.id}
+                onClick={() => handleChallengeClick(challenge)}
+                className={`relative flex flex-col items-center justify-center min-h-[125px] p-3 rounded-3xl border-[2.5px] border-dashed border-black transition-all duration-200 cursor-pointer ${
+                  isAnimating ? 'animate-task-pop ring-4 ring-yellow-400 scale-105' : 'active:scale-95'
+                } ${
+                  isCompleted
+                    ? 'ring-3 ring-amber-400/80 shadow-md'
+                    : 'hover:scale-102 hover:shadow-sm'
+                }`}
+                style={{
+                  backgroundColor: challenge.color,
+                  color: challenge.textColor,
+                }}
+              >
+                {/* Floating Star Animation when clicked */}
+                {isAnimating && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 animate-star-float flex items-center gap-1 bg-yellow-300 text-[#2B1B15] text-xs font-black px-2.5 py-0.5 rounded-full border border-black shadow-lg">
+                    <span>+1</span>
+                    <span>⭐</span>
+                    <span>بطل!</span>
+                  </div>
+                )}
+
+                {/* Completed Stamp */}
+                {isCompleted && (
+                  <div className="absolute top-2 right-2 bg-amber-400 text-[#2B1B15] rounded-full px-1.5 py-0.5 text-[10px] font-black border border-black shadow-xs flex items-center gap-0.5 animate-stamp-pop">
+                    <span>تم</span>
+                    <span>✓</span>
+                  </div>
+                )}
+
+                {/* 1 Star reward indication */}
+                <div className="absolute top-2 left-2 text-[10px] font-bold opacity-80 flex items-center gap-0.5">
+                  <span>+1</span>
+                  <span>⭐</span>
+                </div>
+
+                {/* Challenge content matching challenges.png */}
+                <div className="text-center flex flex-col items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-1 text-center">
+                    <span 
+                      className="text-lg md:text-xl font-black leading-tight"
+                      style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+                    >
+                      {challenge.title}
+                    </span>
+                    <span className={`text-xl transition-transform duration-300 ${
+                      isAnimating ? 'scale-130 rotate-12' : ''
+                    }`}>
+                      {challenge.icon}
+                    </span>
+                  </div>
+
+                  {challenge.subtitle && (
+                    <span className="text-xs font-bold opacity-90 mt-0.5 text-center">
+                      {challenge.subtitle}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Button matching challenges.png: العودة للرئيسية ⬅️ */}
+      <div className="w-full max-w-xs pb-4">
+        <button
+          onClick={() => {
+            playPopSound();
+            onBack();
+          }}
+          className="w-full py-3.5 px-6 rounded-full bg-[#6C7075] hover:bg-[#5C6065] active:scale-95 transition-all text-white text-xl font-black flex items-center justify-center gap-3 border-[2.5px] border-[#222] shadow-[0_5px_0_#222] cursor-pointer"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          <span className="text-base inline-flex items-center justify-center bg-[#5F8FA6] p-1 rounded-sm text-white">
+            ⬅️
+          </span>
+          <span>العودة للرئيسية</span>
+        </button>
+      </div>
+
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/RewardsScreen.tsx ====================
+
+import React, { useState } from 'react';
+import { Reward, ParentChildProfile, CustomRewardRequest } from '../types';
+import { playPopSound, playFanfareSound } from '../utils/audio';
+import { CustomRewardRequestModal } from './CustomRewardRequestModal';
+import { ParentRewardRequestsModal } from './ParentRewardRequestsModal';
+import confetti from 'canvas-confetti';
+
+interface RewardsScreenProps {
+  stars: number;
+  rewards: Reward[];
+  customRequests?: CustomRewardRequest[];
+  profile: ParentChildProfile | null;
+  onRedeemReward: (reward: Reward) => void;
+  onEditProfile: () => void;
+  onBack: () => void;
+  onCreateCustomRequest?: (request: Omit<CustomRewardRequest, 'id' | 'createdAt' | 'status'>) => void;
+  onApproveCustomRequest?: (requestId: string, approvedCost: number) => void;
+  onRejectCustomRequest?: (requestId: string) => void;
+  onDeleteCustomRequest?: (requestId: string) => void;
+}
+
+export const RewardsScreen: React.FC<RewardsScreenProps> = ({
+  stars,
+  rewards,
+  customRequests = [],
+  profile,
+  onRedeemReward,
+  onEditProfile,
+  onBack,
+  onCreateCustomRequest,
+  onApproveCustomRequest,
+  onRejectCustomRequest,
+  onDeleteCustomRequest,
+}) => {
+  const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
+  const [redeemSuccess, setRedeemSuccess] = useState<Reward | null>(null);
+  const [showCustomRequestModal, setShowCustomRequestModal] = useState<boolean>(false);
+  const [showParentRequestsModal, setShowParentRequestsModal] = useState<boolean>(false);
+  const [showMyRequestsExpanded, setShowMyRequestsExpanded] = useState<boolean>(false);
+
+  const childFullName = profile
+    ? `${profile.childFirstName}${profile.childSecondName ? ` ${profile.childSecondName}` : ''}`
+    : 'البطل';
+
+  const pendingRequestsCount = customRequests.filter((r) => r.status === 'pending').length;
+
+  const handleClaim = (reward: Reward) => {
+    playPopSound();
+    setSelectedReward(reward);
+  };
+
+  const confirmRedeem = () => {
+    if (!selectedReward) return;
+    if (stars >= selectedReward.cost) {
+      onRedeemReward(selectedReward);
+      setRedeemSuccess(selectedReward);
+      setSelectedReward(null);
+      playFanfareSound();
+      try {
+        confetti({
+          particleCount: 75,
+          spread: 85,
+          origin: { y: 0.5 },
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  return (
+    <div
+      className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D3BEAF] text-[#2B1B15] select-none"
+      dir="rtl"
+    >
+      {/* Top Header */}
+      <div className="w-full max-w-sm pt-1 pb-3 text-center">
+        <div className="flex items-center justify-between px-2 mb-2">
+          {/* Back button */}
+          <button
+            onClick={() => {
+              playPopSound();
+              onBack();
+            }}
+            className="text-xs bg-white/80 hover:bg-white text-[#2B1B15] px-3 py-1 rounded-full border border-black/30 font-bold cursor-pointer transition-colors"
+          >
+            رجوع ↩
+          </button>
+
+          {/* Child & Mother Account Chip */}
+          <button
+            onClick={() => {
+              playPopSound();
+              onEditProfile();
+            }}
+            className="text-xs bg-white/85 hover:bg-white text-[#2B1B15] px-3 py-1 rounded-full border border-black/30 font-bold cursor-pointer flex items-center gap-1.5"
+            title="تعديل بيانات تسجيل دخول الأم واسم الطفل"
+          >
+            <span>👩‍👦</span>
+            <span>بطلنا: {childFullName}</span>
+            <span className="text-[10px] opacity-70">✎</span>
+          </button>
+
+          {/* Current Star Balance Badge */}
+          <div className="flex items-center gap-1.5 bg-amber-100 border-[2px] border-amber-500 rounded-full px-3 py-1 shadow-xs">
+            <span className="text-sm font-black text-amber-900">رصيدك:</span>
+            <span className="text-base font-black text-amber-900">{stars}</span>
+            <span className="text-base">⭐</span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center gap-1 text-yellow-400 text-3xl">
+            <span>✨</span>
+          </div>
+          <span className="text-4xl">🧸</span>
+          <h1
+            className="text-4xl md:text-5xl font-extrabold text-[#231510] tracking-wide drop-shadow-xs"
+            style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+          >
+            هدايا الأبطال
+          </h1>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="w-full max-w-sm my-auto py-1 space-y-2.5 overflow-y-auto max-h-[66vh] px-1">
+        
+        {/* Child Request Special Gift Button */}
+        <button
+          type="button"
+          onClick={() => {
+            playPopSound();
+            setShowCustomRequestModal(true);
+          }}
+          className="w-full py-2.5 px-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-300 to-amber-300 hover:from-amber-300 hover:to-orange-400 active:scale-98 text-[#2B1B15] border-[2.5px] border-black comic-shadow transition-transform flex items-center justify-between cursor-pointer shadow-sm"
+        >
+          <div className="flex items-center gap-2.5 text-right">
+            <span className="text-3xl p-1 bg-white/70 rounded-xl border border-black/20">
+              🎁
+            </span>
+            <div>
+              <div
+                className="text-base md:text-lg font-black text-[#231510] flex items-center gap-1.5"
+                style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+              >
+                <span>اطلب هدية خاصة تحلم بها!</span>
+                <span className="text-xs bg-red-600 text-white px-2 py-0.2 rounded-full font-bold">
+                  جديد
+                </span>
+              </div>
+              <div className="text-[11px] font-bold text-amber-950">
+                اقترح أي لعبة أو نزهة لماما وبابا ليوافقوا عليها 🌟
+              </div>
+            </div>
+          </div>
+          <span className="text-xs bg-white text-[#2B1B15] font-black px-2.5 py-1 rounded-full border border-black/30 shadow-2xs">
+            اطلب 🚀
+          </span>
+        </button>
+
+        {/* Child's submitted custom requests status bar if any exist */}
+        {customRequests.length > 0 && (
+          <div className="bg-white/80 rounded-2xl border-2 border-black/40 p-2.5 text-right">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  setShowMyRequestsExpanded((prev) => !prev);
+                }}
+                className="flex items-center gap-1.5 text-xs font-black text-[#2B1B15] cursor-pointer"
+              >
+                <span>💌</span>
+                <span>طلباتي الخاصة ({customRequests.length})</span>
+                {pendingRequestsCount > 0 && (
+                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.2 rounded-full font-bold">
+                    {pendingRequestsCount} بانتظار موافقة ماما ⏳
+                  </span>
+                )}
+                <span className="text-stone-500 text-[10px]">
+                  {showMyRequestsExpanded ? '▲ إخفاء' : '▼ عرض'}
+                </span>
+              </button>
+
+              {/* Parent review link */}
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound();
+                  setShowParentRequestsModal(true);
+                }}
+                className="text-[11px] font-bold text-blue-900 hover:text-blue-950 bg-blue-100/80 hover:bg-blue-100 px-2 py-0.5 rounded-full border border-blue-400 cursor-pointer flex items-center gap-1"
+                title="مراجعة واعتماد الطلبات لولي الأمر"
+              >
+                <span>👨‍👩‍👧</span>
+                <span>موافقة ولي الأمر</span>
+                {pendingRequestsCount > 0 && (
+                  <span className="w-4 h-4 bg-red-600 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
+                    {pendingRequestsCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Expanded list of requests */}
+            {showMyRequestsExpanded && (
+              <div className="mt-2 pt-2 border-t border-black/10 space-y-1.5">
+                {customRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-white/90 border border-black/15 text-xs"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">{req.icon}</span>
+                      <span className="font-bold text-[#2B1B15]">{req.title}</span>
+                      <span className="text-[11px] text-stone-500">
+                        ({req.approvedCost || req.proposedCost} ⭐)
+                      </span>
+                    </div>
+
+                    <div>
+                      {req.status === 'pending' && (
+                        <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                          قيد المراجعة ⏳
+                        </span>
+                      )}
+                      {req.status === 'approved' && (
+                        <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full border border-emerald-300">
+                          معتمدة في الهدايا 🎉
+                        </span>
+                      )}
+                      {req.status === 'rejected' && (
+                        <span className="text-[10px] font-bold bg-rose-100 text-rose-900 px-2 py-0.5 rounded-full border border-rose-300">
+                          تم رفضها ❌
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Rewards List: Original Compact Pill Layout */}
+        <div className="space-y-2.5">
+          {rewards.map((reward) => {
+            const canAfford = stars >= reward.cost;
+
+            return (
+              <button
+                key={reward.id}
+                onClick={() => handleClaim(reward)}
+                className={`w-full py-2.5 px-4 rounded-full bg-white border-[2.5px] border-black comic-shadow transition-all duration-200 cursor-pointer active:scale-97 flex items-center justify-between gap-2 text-right ${
+                  reward.isCustom ? 'ring-2 ring-amber-400 bg-amber-50/50' : ''
+                } ${
+                  canAfford
+                    ? 'hover:bg-amber-50 hover:border-amber-900'
+                    : 'hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{reward.icon}</span>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="text-lg md:text-xl font-bold text-[#231510]"
+                        style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+                      >
+                        {reward.title}
+                      </span>
+                      {reward.isCustom && (
+                        <span className="text-[10px] bg-amber-200 text-amber-900 font-black px-1.5 py-0.2 rounded-full border border-amber-400">
+                          ⭐ هدية خاصة!
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs md:text-sm font-semibold text-[#5C3224]">
+                      ({reward.cost} نجمة)
+                    </span>
+                  </div>
+                </div>
+
+                {canAfford ? (
+                  <span className="text-xs bg-emerald-500 text-white font-black px-2.5 py-0.5 rounded-full mr-auto">
+                    جاهز!
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full mr-auto">
+                    باقي {reward.cost - stars} ⭐
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Buttons */}
+      <div className="w-full max-w-sm pb-4 flex flex-col gap-2">
+        {/* Parent quick link if not shown in summary */}
+        {customRequests.length === 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              playPopSound();
+              setShowParentRequestsModal(true);
+            }}
+            className="w-full py-1.5 px-3 rounded-full bg-white/70 hover:bg-white text-[#2B1B15] text-xs font-bold border border-black/30 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+          >
+            <span>👨‍👩‍👧</span>
+            <span>بوابة ولي الأمر: متابعة واعتماد الهدايا الخاصة</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => {
+            playPopSound();
+            onBack();
+          }}
+          className="w-full py-3 px-6 rounded-lg bg-[#5C656E] hover:bg-[#4E565E] active:scale-95 transition-all text-white text-2xl font-black flex items-center justify-center gap-3 border-[2.5px] border-black shadow-[0_5px_0_#222] cursor-pointer"
+          style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+        >
+          <span className="text-base inline-flex items-center justify-center bg-[#5F8FA6] p-1 rounded-sm text-white">
+            ⬅️
+          </span>
+          <span>العودة للرئيسية</span>
+        </button>
+      </div>
+
+      {/* Custom Reward Request Modal for Child */}
+      <CustomRewardRequestModal
+        isOpen={showCustomRequestModal}
+        childName={profile?.childFirstName || 'البطل'}
+        onClose={() => setShowCustomRequestModal(false)}
+        onSubmitRequest={(req) => {
+          onCreateCustomRequest?.(req);
+        }}
+      />
+
+      {/* Parent Review & Approval Modal */}
+      <ParentRewardRequestsModal
+        isOpen={showParentRequestsModal}
+        requests={customRequests}
+        onClose={() => setShowParentRequestsModal(false)}
+        onApproveRequest={(id, cost) => {
+          onApproveCustomRequest?.(id, cost);
+        }}
+        onRejectRequest={(id) => {
+          onRejectCustomRequest?.(id);
+        }}
+        onDeleteRequest={(id) => {
+          onDeleteCustomRequest?.(id);
+        }}
+      />
+
+      {/* Claim Modal */}
+      {selectedReward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-3xl p-6 bg-[#FFF8F0] border-4 border-black comic-shadow text-center">
+            <div className="text-5xl mb-2">{selectedReward.icon}</div>
+            <h3 className="text-2xl font-black text-[#2B1B15] mb-1">
+              {selectedReward.title}
+            </h3>
+            {selectedReward.isCustom && (
+              <span className="inline-block text-xs bg-amber-200 text-amber-900 font-black px-2.5 py-0.5 rounded-full border border-amber-400 mb-2">
+                🌟 هديتك الخاصة المعتمدة من ماما وبابا!
+              </span>
+            )}
+            <p className="text-base font-bold text-amber-800 mb-4">
+              التكلفة: {selectedReward.cost} نجمة ⭐
+            </p>
+
+            {stars >= selectedReward.cost ? (
+              <div>
+                <p className="text-sm font-semibold text-[#4A2D1F] mb-5">
+                  رائع يا {childFullName}! لديك {stars} نجمة. هل تود استبدال {selectedReward.cost} نجمة للحصول على هذه الهدية؟
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={confirmRedeem}
+                    className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-lg border-2 border-black comic-shadow-sm cursor-pointer"
+                  >
+                    نعم، استبدل الآن! 🎉
+                  </button>
+                  <button
+                    onClick={() => {
+                      playPopSound();
+                      setSelectedReward(null);
+                    }}
+                    className="flex-1 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-[#2B1B15] font-bold text-base border-2 border-black cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="bg-amber-100 border border-amber-300 rounded-2xl p-3 mb-4">
+                  <p className="text-sm font-bold text-amber-900">
+                    تحتاج إلى {selectedReward.cost - stars} نجمة إضافية للوصول إلى هذه الهدية!
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    أنجز المزيد من مهام الأبطال وستحصل عليها قريباً يا {childFullName}! 💪⭐
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    playPopSound();
+                    setSelectedReward(null);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-[#D68868] hover:bg-[#CC7A58] active:scale-95 text-white font-black text-lg border-2 border-black comic-shadow-sm cursor-pointer"
+                >
+                  حسناً، سأواصل التحدي! 🚀
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {redeemSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-3xl p-6 bg-gradient-to-b from-amber-50 to-orange-100 border-4 border-black comic-shadow text-center">
+            <div className="text-6xl mb-2 animate-bounce">🎁</div>
+            <h3 className="text-3xl font-black text-[#2B1B15] mb-2">
+              مبــــارك يا {childFullName}! 🎉
+            </h3>
+            <p className="text-lg font-bold text-emerald-800 mb-2">
+              حصلت على: {redeemSuccess.title} {redeemSuccess.icon}
+            </p>
+            <p className="text-xs font-semibold text-[#5C3224] mb-5 bg-white/70 py-2 px-3 rounded-xl border border-amber-300">
+              أخبر ماما الآن لتستمتع بمكافأتك المستحقة! 🌟
+            </p>
+            <button
+              onClick={() => {
+                playPopSound();
+                setRedeemSuccess(null);
+              }}
+              className="w-full py-3 rounded-2xl bg-[#5C656E] hover:bg-[#4E565E] active:scale-95 text-white font-black text-lg border-2 border-black comic-shadow-sm cursor-pointer"
+            >
+              شكراً، رائع! 🤩
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/StarCelebrationModal.tsx ====================
+
+import React, { useEffect, useState } from 'react';
+import confetti from 'canvas-confetti';
+import { playCelebrationSound, playPopSound, toggleMute, getIsMuted } from '../utils/audio';
+
+interface StarCelebrationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  taskTitle?: string;
+  totalStars?: number;
+}
+
+export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
+  isOpen,
+  onClose,
+  taskTitle,
+  totalStars = 1,
+}) => {
+  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(getIsMuted());
+  const [displayStars, setDisplayStars] = useState<number>(Math.max(0, totalStars - 1));
+  const [starCountPulsing, setStarCountPulsing] = useState<boolean>(false);
+
+  // Trigger celebration effects on modal open
+  useEffect(() => {
+    if (isOpen) {
+      // Set initial count before increase
+      const prevStars = Math.max(0, totalStars - 1);
+      setDisplayStars(prevStars);
+      setStarCountPulsing(false);
+
+      // Play rich celebration audio (poppers, brass fanfare, magic harp)
+      playCelebrationSound();
+
+      // Launch cheerful confetti
+      try {
+        confetti({
+          particleCount: 70,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#FFD700', '#FF69B4', '#00CED1', '#32CD32', '#FFA500'],
+        });
+
+        // Second side bursts
+        setTimeout(() => {
+          confetti({
+            particleCount: 45,
+            angle: 60,
+            spread: 60,
+            origin: { x: 0 },
+            colors: ['#FFD700', '#FF1493', '#00E5FF'],
+          });
+          confetti({
+            particleCount: 45,
+            angle: 120,
+            spread: 60,
+            origin: { x: 1 },
+            colors: ['#FFD700', '#FF1493', '#00E5FF'],
+          });
+        }, 260);
+      } catch (e) {
+        console.error(e);
+      }
+
+      // Animate star count increment (+1) with celebratory pulse
+      const timer = setTimeout(() => {
+        setDisplayStars(totalStars);
+        setStarCountPulsing(true);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, totalStars]);
+
+  const handleToggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const muted = toggleMute();
+    setIsAudioMuted(muted);
+    if (!muted) {
+      playPopSound();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-200">
+      <div 
+        className="w-full max-w-sm rounded-[32px] p-5 text-center relative overflow-hidden shadow-2xl border-4 border-[#3D2619] transition-all transform scale-100"
+        style={{
+          background: 'linear-gradient(180deg, #FDE8C7 0%, #F8D3DF 50%, #E9CBE5 100%)',
+        }}
+      >
+        {/* Audio Mute/Unmute Toggle in top corner */}
+        <button
+          onClick={handleToggleSound}
+          title={isAudioMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+          className="absolute top-3.5 left-3.5 z-20 w-8 h-8 rounded-full bg-white/70 hover:bg-white border border-[#2B1B15]/30 flex items-center justify-center text-sm shadow-xs cursor-pointer transition-transform active:scale-90"
+        >
+          {isAudioMuted ? '🔇' : '🔊'}
+        </button>
+
+        {/* Subtle decorative background stars */}
+        <div className="absolute top-4 right-10 text-yellow-400 text-xl animate-pulse">✨</div>
+        <div className="absolute top-12 right-4 text-yellow-400 text-lg animate-pulse delay-100">⭐</div>
+        <div className="absolute bottom-20 left-4 text-pink-400 text-lg">💖</div>
+        <div className="absolute bottom-24 right-4 text-yellow-300 text-xl">✨</div>
+
+        {/* Top Text as seen in video: أحسنت يا بطل 🎉 */}
+        <div className="mt-1 mb-2">
+          <h2 className="text-3xl font-extrabold text-[#381E14] flex items-center justify-center gap-2 drop-shadow-xs">
+            <span>🎉</span>
+            <span>أحسنت يا بطل</span>
+          </h2>
+          {taskTitle && (
+            <p className="text-xs font-semibold text-[#663828] mt-0.5 bg-white/60 inline-block px-3 py-0.5 rounded-full border border-[#D9B59F]">
+              أتممت: {taskTitle}
+            </p>
+          )}
+        </div>
+
+        {/* The Smiling Happy Kawaii Star matching the video */}
+        <div className="my-2.5 flex justify-center items-center">
+          <div className="relative animate-star-bounce">
+            {/* Glowing aura */}
+            <div className="absolute inset-0 rounded-full bg-yellow-300/60 blur-xl scale-125" />
+            
+            <svg
+              width="125"
+              height="125"
+              viewBox="0 0 100 100"
+              className="relative drop-shadow-[0_8px_16px_rgba(234,179,8,0.4)]"
+            >
+              <defs>
+                <linearGradient id="starGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#FFF066" />
+                  <stop offset="100%" stopColor="#FBBF24" />
+                </linearGradient>
+              </defs>
+              
+              {/* Star Body with bold comic outline */}
+              <polygon
+                points="50,5 64,34 96,39 73,62 78,94 50,79 22,94 27,62 4,39 36,34"
+                fill="url(#starGrad)"
+                stroke="#2B1810"
+                strokeWidth="4"
+                strokeLinejoin="round"
+              />
+              
+              {/* Left Eye */}
+              <circle cx="42" cy="45" r="3.2" fill="#2B1810" />
+              <circle cx="43" cy="44" r="1.1" fill="#FFFFFF" />
+              
+              {/* Right Eye */}
+              <circle cx="58" cy="45" r="3.2" fill="#2B1810" />
+              <circle cx="59" cy="44" r="1.1" fill="#FFFFFF" />
+
+              {/* Rosy Cheeks */}
+              <ellipse cx="36" cy="51" rx="3.5" ry="2" fill="#F87171" opacity="0.75" />
+              <ellipse cx="64" cy="51" rx="3.5" ry="2" fill="#F87171" opacity="0.75" />
+
+              {/* Happy Smile */}
+              <path
+                d="M 44 52 Q 50 60 56 52"
+                fill="none"
+                stroke="#2B1810"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {/* Text under star: لقد حصلت على نجمة جديدة 🤩 */}
+        <div className="mb-4">
+          <p className="text-xl font-bold text-[#3B2014] flex items-center justify-center gap-1.5">
+            <span>لقد حصلت على نجمة جديدة</span>
+            <span className="text-2xl">🤩</span>
+          </p>
+
+          {/* Real-time Star Increment Badge */}
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <span className="font-bold text-amber-900 bg-amber-100/90 border border-amber-300 px-3 py-1 rounded-full text-xs shadow-xs">
+              +1 نجمة ذهبية ⭐
+            </span>
+            <span className={`font-black text-xs px-3 py-1 rounded-full border border-emerald-400 bg-emerald-50 text-emerald-900 transition-all duration-300 ${
+              starCountPulsing ? 'scale-110 shadow-md ring-2 ring-emerald-300' : ''
+            }`}>
+              إجمالي نجومك الآن: {displayStars} ⭐
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom Button: العودة للمهام ⬅️ */}
+        <button
+          onClick={() => {
+            playPopSound();
+            onClose();
+          }}
+          className="w-full py-3 px-6 rounded-2xl bg-white hover:bg-slate-50 active:scale-95 transition-all text-[#2B1B15] text-xl font-extrabold flex items-center justify-center gap-3 border-[3px] border-[#2B1B15] comic-shadow cursor-pointer"
+        >
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-[#6699AA] text-white text-base">
+            ⬅️
+          </span>
+          <span>العودة للمهام</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/TopMotivationalToast.tsx ====================
+
+import React, { useEffect, useState } from 'react';
+import { playPopSound } from '../utils/audio';
+
+interface TopMotivationalToastProps {
+  message: string | null;
+  taskTitle?: string;
+  onClose: () => void;
+  durationMs?: number;
+}
+
+export const TopMotivationalToast: React.FC<TopMotivationalToastProps> = ({
+  message,
+  taskTitle,
+  onClose,
+  durationMs = 7000,
+}) => {
+  const [visible, setVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (message) {
+      setVisible(true);
+      const timer = setTimeout(() => {
+        setVisible(false);
+        setTimeout(onClose, 250);
+      }, durationMs);
+
+      return () => clearTimeout(timer);
+    } else {
+      setVisible(false);
+    }
+  }, [message, durationMs, onClose]);
+
+  if (!message) return null;
+
+  return (
+    <div
+      className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-sm transition-all duration-300 pointer-events-auto ${
+        visible
+          ? 'opacity-100 translate-y-0 scale-100'
+          : 'opacity-0 -translate-y-4 scale-95 pointer-events-none'
+      }`}
+      dir="rtl"
+    >
+      <div className="relative bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-300 text-[#2B1810] border-[3px] border-black rounded-3xl p-3 shadow-2xl overflow-hidden flex items-center gap-3">
+        {/* Animated star icon */}
+        <div className="relative w-11 h-11 shrink-0 bg-white/90 rounded-2xl border-2 border-black flex items-center justify-center text-2xl shadow-xs animate-star-bounce">
+          <span>⭐</span>
+          <span className="absolute -top-1 -right-1 text-[11px]">✨</span>
+        </div>
+
+        {/* Message and task title */}
+        <div className="flex-1 min-w-0 pr-0.5">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="bg-black/85 text-yellow-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+              +١ نجمة ⭐ إنجاز خارق!
+            </span>
+            {taskTitle && (
+              <span className="text-[10px] font-bold text-[#4B220C] truncate max-w-[120px]">
+                ({taskTitle})
+              </span>
+            )}
+          </div>
+          <p
+            className="text-xs md:text-sm font-black leading-tight text-[#2B1810] drop-shadow-2xs"
+            style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
+          >
+            {message}
+          </p>
+        </div>
+
+        {/* Close Button */}
+        <button
+          onClick={() => {
+            playPopSound();
+            setVisible(false);
+            setTimeout(onClose, 200);
+          }}
+          className="w-6 h-6 rounded-full bg-black/15 hover:bg-black/30 border border-black/40 flex items-center justify-center text-xs font-black text-[#2B1810] shrink-0 cursor-pointer transition-transform active:scale-90"
+          title="إغلاق التنبيه"
+        >
+          ✕
+        </button>
+
+        {/* Bottom subtle progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
+          <div
+            className="h-full bg-black/60 transition-all linear"
+            style={{
+              animation: `shrinkWidth ${durationMs}ms linear forwards`,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/CustomRewardRequestModal.tsx ====================
+
+import React, { useState } from 'react';
+import { CustomRewardRequest } from '../types';
+import { playPopSound, playFanfareSound } from '../utils/audio';
+import confetti from 'canvas-confetti';
+
+interface CustomRewardRequestModalProps {
+  isOpen: boolean;
+  childName?: string;
+  onClose: () => void;
+  onSubmitRequest: (request: Omit<CustomRewardRequest, 'id' | 'createdAt' | 'status'>) => void;
+}
+
+const GIFT_ICONS = [
+  '🚲', '🎮', '🧸', '🍦', '🎨', '⚽', 
+  '📚', '🎪', '🚀', '🍕', '🎯', '🎸', 
+  '🏊‍♂️', '🐶', '🧁', '🏎️', '🍿', '🎬'
+];
+
+const INSPIRATION_IDEAS = [
+  { title: 'دراجة هوائية جديدة', icon: '🚲', cost: 40 },
+  { title: 'رحلة إلى الملاهي', icon: '🎡', cost: 50 },
+  { title: 'لعبة تركيب وليجو', icon: '🧱', cost: 30 },
+  { title: 'آيس كريم كبير مع صوص', icon: '🍦', cost: 15 },
+  { title: 'حضور فيلم في السينما', icon: '🎬', cost: 35 },
+  { title: 'يوم لعب في حديقة الحيوان', icon: '🦁', cost: 45 },
+  { title: 'ألوان وأدوات رسم جديدة', icon: '🎨', cost: 20 },
+  { title: 'بيتزا عملاقة بالجبنة', icon: '🍕', cost: 25 },
+];
+
+export const CustomRewardRequestModal: React.FC<CustomRewardRequestModalProps> = ({
+  isOpen,
+  childName = 'البطل',
+  onClose,
+  onSubmitRequest,
+}) => {
+  const [title, setTitle] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('🎁');
+  const [proposedCost, setProposedCost] = useState(25);
+  const [childMessage, setChildMessage] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    playFanfareSound();
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 90,
+        origin: { y: 0.6 },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    onSubmitRequest({
+      title: title.trim(),
+      icon: selectedIcon,
+      proposedCost,
+      childMessage: childMessage.trim() || undefined,
+      childName,
+    });
+
+    setSubmitted(true);
+  };
+
+  const handleApplyIdea = (idea: { title: string; icon: string; cost: number }) => {
+    playPopSound();
+    setTitle(idea.title);
+    setSelectedIcon(idea.icon);
+    setProposedCost(idea.cost);
+  };
+
+  const handleResetAndClose = () => {
+    playPopSound();
+    setSubmitted(false);
+    setTitle('');
+    setSelectedIcon('🎁');
+    setProposedCost(25);
+    setChildMessage('');
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/60 backdrop-blur-xs select-none overflow-y-auto" dir="rtl">
+      <div className="relative w-full max-w-md rounded-3xl p-5 md:p-6 bg-[#FFF9F2] border-4 border-black comic-shadow my-auto">
+        
+        {/* Close Button */}
+        <button
+          onClick={handleResetAndClose}
+          type="button"
+          className="absolute top-3 left-3 w-8 h-8 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-700 font-black flex items-center justify-center border-2 border-black cursor-pointer text-sm"
+        >
+          ✕
+        </button>
+
+        {submitted ? (
+          /* Confirmation Screen */
+          <div className="text-center py-4 space-y-4">
+            <div className="text-6xl animate-bounce">💌✨</div>
+            <h3 className="text-2xl font-black text-[#2B1B15]">
+              عاش يا {childName}! تم إرسال طلبك 🚀
+            </h3>
+            
+            <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-300 text-right space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{selectedIcon}</span>
+                <div>
+                  <h4 className="font-black text-lg text-[#2B1B15]">{title}</h4>
+                  <p className="text-xs font-bold text-amber-800">
+                    النجوم المقترحة من قبلك: {proposedCost} ⭐
+                  </p>
+                </div>
+              </div>
+              {childMessage && (
+                <p className="text-xs text-stone-600 bg-white/80 p-2 rounded-xl border border-amber-200 mt-2">
+                  <span className="font-bold text-amber-900">رسالتك لماما وبابا:</span> &quot;{childMessage}&quot;
+                </p>
+              )}
+            </div>
+
+            <p className="text-xs md:text-sm font-semibold text-[#5C3224] leading-relaxed">
+              تم إرسال الطلب بنجاح! سيقوم ولي الأمر (ماما أو بابا) بمراجعته واعتماده، وبمجرد الموافقة ستظهر هديتك في قائمة الهدايا لتستبدلها بنجومك عندما تجمعها! 🌟
+            </p>
+
+            <button
+              onClick={handleResetAndClose}
+              type="button"
+              className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-lg border-2 border-black comic-shadow-sm cursor-pointer"
+            >
+              رائع، فهمت يا بطل! 🤩
+            </button>
+          </div>
+        ) : (
+          /* The Gift Proposal Form */
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Header */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center gap-2 bg-amber-100 border-2 border-amber-500 rounded-full px-3 py-1 mb-2">
+                <span className="text-lg">🎁</span>
+                <span className="text-xs font-black text-amber-900">اقتراح هدية خاصة</span>
+                <span className="text-base">✨</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-[#231510]">
+                ما الهدية التي تحلم بها يا {childName}؟
+              </h3>
+              <p className="text-xs text-[#5C3224] mt-1">
+                اقترح هديتك الخاصة، وسيقوم ولي الأمر بمراجعتها واعتمادها لك!
+              </p>
+            </div>
+
+            {/* Quick Inspiration Pills */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1.5">
+                أفكار سريعة لهدايا يحبها الأبطال:
+              </label>
+              <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-thin">
+                {INSPIRATION_IDEAS.slice(0, 4).map((idea) => (
+                  <button
+                    key={idea.title}
+                    type="button"
+                    onClick={() => handleApplyIdea(idea)}
+                    className="shrink-0 text-[11px] font-bold bg-white hover:bg-amber-100 text-[#2B1B15] px-2.5 py-1 rounded-full border border-black/30 cursor-pointer flex items-center gap-1 transition-colors"
+                  >
+                    <span>{idea.icon}</span>
+                    <span>{idea.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Gift Title Input */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1">
+                اسم الهدية أو النشاط <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="مثلاً: دراجة جديدة، لعبة ليجو، زيارة الملاهي..."
+                  className="flex-1 py-2 px-3 text-sm font-bold bg-white border-2 border-black rounded-xl text-[#2B1B15] placeholder:text-stone-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <div className="w-11 h-11 bg-white border-2 border-black rounded-xl flex items-center justify-center text-2xl shadow-2xs">
+                  {selectedIcon}
+                </div>
+              </div>
+            </div>
+
+            {/* Icon Picker */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1.5">
+                اختر رمز الهدية المناسب:
+              </label>
+              <div className="grid grid-cols-9 gap-1 bg-white p-2 rounded-2xl border border-black/20">
+                {GIFT_ICONS.map((icon) => (
+                  <button
+                    key={icon}
+                    type="button"
+                    onClick={() => {
+                      playPopSound();
+                      setSelectedIcon(icon);
+                    }}
+                    className={`w-7 h-7 text-lg rounded-lg flex items-center justify-center cursor-pointer transition-all ${
+                      selectedIcon === icon
+                        ? 'bg-amber-300 border-2 border-black scale-110 shadow-xs'
+                        : 'hover:bg-stone-100'
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Proposed Star Cost */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-black text-[#2B1B15]">
+                  كم نجمة تقترح لهذه الهدية؟
+                </label>
+                <span className="text-xs font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                  {proposedCost} نجمة ⭐
+                </span>
+              </div>
+              
+              {/* Presets */}
+              <div className="flex gap-1.5 justify-between mb-2">
+                {[10, 15, 20, 25, 30, 50].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => {
+                      playPopSound();
+                      setProposedCost(num);
+                    }}
+                    className={`flex-1 py-1 text-xs font-black rounded-lg border cursor-pointer transition-all ${
+                      proposedCost === num
+                        ? 'bg-amber-400 border-black shadow-2xs font-extrabold text-[#2B1B15]'
+                        : 'bg-white border-black/20 text-stone-700 hover:bg-amber-50'
+                    }`}
+                  >
+                    {num}⭐
+                  </button>
+                ))}
+              </div>
+
+              {/* Fine stepper */}
+              <div className="flex items-center justify-center gap-3 bg-white p-1.5 rounded-xl border border-black/20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPopSound();
+                    setProposedCost((prev) => Math.max(5, prev - 5));
+                  }}
+                  className="w-7 h-7 bg-stone-100 hover:bg-stone-200 text-stone-700 font-black rounded-lg border border-black/30 cursor-pointer text-xs"
+                >
+                  -5
+                </button>
+                <span className="text-sm font-black text-[#2B1B15] min-w-[60px] text-center">
+                  {proposedCost} نجمة
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPopSound();
+                    setProposedCost((prev) => Math.min(100, prev + 5));
+                  }}
+                  className="w-7 h-7 bg-stone-100 hover:bg-stone-200 text-stone-700 font-black rounded-lg border border-black/30 cursor-pointer text-xs"
+                >
+                  +5
+                </button>
+              </div>
+            </div>
+
+            {/* Message to Parent */}
+            <div>
+              <label className="block text-xs font-black text-[#2B1B15] mb-1">
+                رسالة تشجيعية لماما أو بابا (اختياري):
+              </label>
+              <input
+                type="text"
+                value={childMessage}
+                onChange={(e) => setChildMessage(e.target.value)}
+                placeholder="مثلاً: أوعدكم أكون بطل شاطر وأرتب غرفتي كل يوم!"
+                className="w-full py-2 px-3 text-xs bg-white border-2 border-black rounded-xl text-[#2B1B15] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2.5 pt-1">
+              <button
+                type="submit"
+                disabled={!title.trim()}
+                className="flex-1 py-3 rounded-2xl bg-[#E65100] hover:bg-[#D84315] disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 text-white font-black text-base border-2 border-black comic-shadow-sm cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>إرسال الطلب لماما وبابا</span>
+                <span>🚀</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetAndClose}
+                className="py-3 px-4 rounded-2xl bg-stone-200 hover:bg-stone-300 active:scale-95 text-stone-800 font-bold text-sm border-2 border-black cursor-pointer"
+              >
+                إلغاء
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+==================== FILE: src/components/ParentRewardRequestsModal.tsx ====================
+
+import React, { useState } from 'react';
+import { CustomRewardRequest } from '../types';
+import { playPopSound, playFanfareSound } from '../utils/audio';
+
+interface ParentRewardRequestsModalProps {
+  isOpen: boolean;
+  requests: CustomRewardRequest[];
+  onClose: () => void;
+  onApproveRequest: (requestId: string, approvedCost: number) => void;
+  onRejectRequest: (requestId: string) => void;
+  onDeleteRequest: (requestId: string) => void;
+}
+
+export const ParentRewardRequestsModal: React.FC<ParentRewardRequestsModalProps> = ({
+  isOpen,
+  requests,
+  onClose,
+  onApproveRequest,
+  onRejectRequest,
+  onDeleteRequest,
+}) => {
+  // Store customized cost per request before approving
+  const [editedCosts, setEditedCosts] = useState<Record<string, number>>({});
+  const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
+
+  if (!isOpen) return null;
+
+  const pendingRequests = requests.filter((r) => r.status === 'pending');
+  const otherRequests = requests.filter((r) => r.status !== 'pending');
+  const displayedRequests = activeTab === 'pending' ? pendingRequests : requests;
+
+  const getCostFor = (req: CustomRewardRequest) => {
+    if (editedCosts[req.id] !== undefined) {
+      return editedCosts[req.id];
+    }
+    return req.proposedCost;
+  };
+
+  const handleCostChange = (reqId: string, delta: number) => {
+    playPopSound();
+    setEditedCosts((prev) => {
+      const current = prev[reqId] !== undefined ? prev[reqId] : requests.find((r) => r.id === reqId)?.proposedCost || 20;
+      const next = Math.max(1, Math.min(200, current + delta));
+      return { ...prev, [reqId]: next };
+    });
+  };
+
+  const handleApprove = (req: CustomRewardRequest) => {
+    playFanfareSound();
+    const finalCost = getCostFor(req);
+    onApproveRequest(req.id, finalCost);
+  };
+
+  const handleReject = (reqId: string) => {
+    playPopSound();
+    onRejectRequest(reqId);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/60 backdrop-blur-xs select-none overflow-y-auto" dir="rtl">
+      <div className="relative w-full max-w-lg rounded-3xl p-5 md:p-6 bg-[#FAF5EF] border-4 border-black comic-shadow my-auto text-[#2B1B15]">
+        
+        {/* Close Button */}
+        <button
+          onClick={() => {
+            playPopSound();
+            onClose();
+          }}
+          type="button"
+          className="absolute top-3 left-3 w-8 h-8 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-700 font-black flex items-center justify-center border-2 border-black cursor-pointer text-sm"
+        >
+          ✕
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 border border-blue-400 rounded-full px-3 py-0.5 text-xs font-black mb-1.5">
+            <span>👨‍👩‍👧</span>
+            <span>بوابة ولي الأمر</span>
+          </div>
+          <h3 className="text-2xl font-black text-[#231510]">
+            مراجعة طلبات الهدايا الخاصة
+          </h3>
+          <p className="text-xs text-[#5C3224] mt-0.5">
+            يمكنك الموافقة على الهدايا المقترحة من طفلك وتعديل عدد النجوم المطلوبة لاستبدالها.
+          </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="flex gap-2 mb-3 bg-stone-200/80 p-1 rounded-2xl border border-black/20">
+          <button
+            type="button"
+            onClick={() => {
+              playPopSound();
+              setActiveTab('pending');
+            }}
+            className={`flex-1 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'pending'
+                ? 'bg-white text-[#2B1B15] shadow-xs border border-black/20'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>طلبات جديدة بانتظارك</span>
+            {pendingRequests.length > 0 && (
+              <span className="w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playPopSound();
+              setActiveTab('all');
+            }}
+            className={`flex-1 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === 'all'
+                ? 'bg-white text-[#2B1B15] shadow-xs border border-black/20'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            جميع الطلبات ({requests.length})
+          </button>
+        </div>
+
+        {/* List of Requests */}
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1 py-1">
+          {displayedRequests.length === 0 ? (
+            <div className="text-center py-8 bg-white/70 rounded-2xl border-2 border-dashed border-stone-300 p-4">
+              <span className="text-4xl block mb-2">🎁✨</span>
+              <p className="font-bold text-sm text-[#2B1B15]">
+                {activeTab === 'pending'
+                  ? 'لا توجد طلبات هدايا جديدة معلقة حالياً'
+                  : 'لم يقم الطفل باقتراح أي هدية خاصة حتى الآن'}
+              </p>
+              <p className="text-xs text-stone-500 mt-1">
+                عندما يقوم الطفل بطلب هدية خاصة من قسم المكافآت، ستظهر هنا فوراً لمراجعتها واعتمادها!
+              </p>
+            </div>
+          ) : (
+            displayedRequests.map((req) => {
+              const currentCost = getCostFor(req);
+              const isPending = req.status === 'pending';
+              const isApproved = req.status === 'approved';
+              const isRejected = req.status === 'rejected';
+
+              return (
+                <div
+                  key={req.id}
+                  className={`p-3.5 rounded-2xl border-2 bg-white transition-all ${
+                    isPending
+                      ? 'border-amber-500 shadow-xs ring-1 ring-amber-300'
+                      : isApproved
+                      ? 'border-emerald-400 bg-emerald-50/40'
+                      : 'border-stone-300 bg-stone-50 opacity-80'
+                  }`}
+                >
+                  {/* Top Bar */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-3xl p-1 bg-amber-50 rounded-xl border border-amber-200">
+                        {req.icon}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-black text-base text-[#2B1B15]">
+                            {req.title}
+                          </h4>
+                          {isPending && (
+                            <span className="text-[10px] bg-amber-100 text-amber-900 font-black px-2 py-0.5 rounded-full border border-amber-300">
+                              جديد ⏳
+                            </span>
+                          )}
+                          {isApproved && (
+                            <span className="text-[10px] bg-emerald-100 text-emerald-900 font-black px-2 py-0.5 rounded-full border border-emerald-300">
+                              معتمدة في الهدايا ✅
+                            </span>
+                          )}
+                          {isRejected && (
+                            <span className="text-[10px] bg-rose-100 text-rose-900 font-black px-2 py-0.5 rounded-full border border-rose-300">
+                              مرفوضة ❌
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-500">
+                          بطلنا: {req.childName || 'الطفل'} • اقتراح الطفل: {req.proposedCost} ⭐
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playPopSound();
+                        onDeleteRequest(req.id);
+                      }}
+                      title="حذف الطلب"
+                      className="text-stone-400 hover:text-rose-600 p-1 text-xs cursor-pointer"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+
+                  {/* Child message if present */}
+                  {req.childMessage && (
+                    <div className="text-xs bg-amber-50/70 p-2 rounded-xl border border-amber-200 mb-3 text-stone-700">
+                      <span className="font-bold text-amber-900">رسالة الطفل:</span> &quot;{req.childMessage}&quot;
+                    </div>
+                  )}
+
+                  {/* Star Adjustment & Approval controls */}
+                  {isPending && (
+                    <div className="mt-2 pt-2 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
+                        <span className="text-xs font-bold text-[#2B1B15]">
+                          النجوم المعتمدة:
+                        </span>
+                        <div className="flex items-center gap-1 bg-stone-100 px-2 py-1 rounded-xl border border-stone-300">
+                          <button
+                            type="button"
+                            onClick={() => handleCostChange(req.id, -5)}
+                            className="w-6 h-6 bg-white hover:bg-stone-200 text-stone-800 font-black rounded-lg border border-stone-300 cursor-pointer text-xs"
+                          >
+                            -5
+                          </button>
+                          <span className="text-sm font-black text-amber-900 px-2 min-w-[45px] text-center">
+                            {currentCost} ⭐
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCostChange(req.id, 5)}
+                            className="w-6 h-6 bg-white hover:bg-stone-200 text-stone-800 font-black rounded-lg border border-stone-300 cursor-pointer text-xs"
+                          >
+                            +5
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(req)}
+                          className="flex-1 sm:flex-initial py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs border border-emerald-900 cursor-pointer flex items-center justify-center gap-1 shadow-2xs"
+                        >
+                          <span>الموافقة والإضافة للهدايا</span>
+                          <span>✅</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleReject(req.id)}
+                          className="py-2 px-2.5 rounded-xl bg-stone-200 hover:bg-rose-100 hover:text-rose-900 text-stone-700 font-bold text-xs border border-stone-400 cursor-pointer"
+                        >
+                          رفض
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {isApproved && (
+                    <div className="mt-2 text-xs text-emerald-800 bg-emerald-100/60 p-2 rounded-xl flex items-center justify-between">
+                      <span>أصبحت هذه الهدية متاحة الآن للطفل بـ {req.approvedCost || req.proposedCost} نجمة ⭐</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 pt-3 border-t border-stone-200 flex justify-between items-center">
+          <p className="text-[11px] text-stone-500">
+            * الهدايا المعتمدة تظهر فوراً في شاشة المكافآت ليستبدلها الطفل بنجومه.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              playPopSound();
+              onClose();
+            }}
+            className="py-2 px-5 bg-[#2B1B15] hover:bg-[#3D2619] text-white rounded-xl font-bold text-xs cursor-pointer"
+          >
+            إغلاق
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -1,6 +1,6 @@
 {
   "name": "عالم الأبطال - A World of Heroes",
-  "description": "تطبيق تحفيزي للأطفال لتشجيع العادات الإيجابية وإنجاز المهام وحصد النجوم والمكافآت مع الأبطال الخارقين",
+  "description": "تطبيق عالم الأبطال لتشجيع الأطفال على المهام اليومية الإيجابية وجمع النجوم وطلب هدايا الأبطال المميزة بالبريد",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

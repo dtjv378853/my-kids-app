@@ -19,19 +19,18 @@ export const HeroesScreen: React.FC<HeroesScreenProps> = ({
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D3BEAF] text-[#2B1B15] overflow-y-auto select-none">
       
-      {/* Decorative stars in header like heroes.png */}
-      <div className="w-full max-w-md flex items-center justify-between px-2 pt-2">
-        <div className="flex gap-1 text-yellow-500 text-xl animate-pulse">
-          <span>✨</span>
-          <span className="text-sm">⭐</span>
-        </div>
+      {/* Title with decorative stars directly beside كلمة الخارق */}
+      <div className="w-full max-w-md flex items-center justify-center px-2 pt-2 text-center">
         <h1 
-          className="text-4xl md:text-5xl font-extrabold text-[#231510] tracking-wide text-center"
+          className="text-4xl md:text-5xl font-extrabold text-[#231510] tracking-wide inline-flex items-center justify-center gap-2"
           style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
         >
-          اختر بطلك الخارق
+          <span>اختر بطلك الخارق</span>
+          <span className="inline-flex items-center gap-1 text-yellow-500 text-2xl md:text-3xl animate-pulse select-none">
+            <span>✨</span>
+            <span>⭐</span>
+          </span>
         </h1>
-        <div className="w-6"></div>
       </div>
 
       {/* Hero Cards Grid: 2x2 exact layout like heroes.png */}

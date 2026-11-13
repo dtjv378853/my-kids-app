@@ -16,6 +16,16 @@ export const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
   onCompleteTask,
   onBack,
 }) => {
+  const [animatingChallengeId, setAnimatingChallengeId] = React.useState<string | null>(null);
+
+  const handleChallengeClick = (challenge: Task) => {
+    setAnimatingChallengeId(challenge.id);
+    setTimeout(() => {
+      setAnimatingChallengeId((prev) => (prev === challenge.id ? null : prev));
+    }, 700);
+    onCompleteTask(challenge);
+  };
+
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D8C6B7] text-[#2B1B15] select-none">
       
@@ -52,14 +62,15 @@ export const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
         <div className="grid grid-cols-2 gap-4">
           {EXTRA_CHALLENGES.map((challenge) => {
             const isCompleted = completedTaskIds.includes(challenge.id);
+            const isAnimating = animatingChallengeId === challenge.id;
 
             return (
               <button
                 key={challenge.id}
-                onClick={() => {
-                  onCompleteTask(challenge);
-                }}
-                className={`relative flex flex-col items-center justify-center min-h-[125px] p-3 rounded-3xl border-[2.5px] border-dashed border-black transition-all duration-200 cursor-pointer active:scale-95 ${
+                onClick={() => handleChallengeClick(challenge)}
+                className={`relative flex flex-col items-center justify-center min-h-[125px] p-3 rounded-3xl border-[2.5px] border-dashed border-black transition-all duration-200 cursor-pointer ${
+                  isAnimating ? 'animate-task-pop ring-4 ring-yellow-400 scale-105' : 'active:scale-95'
+                } ${
                   isCompleted
                     ? 'ring-3 ring-amber-400/80 shadow-md'
                     : 'hover:scale-102 hover:shadow-sm'
@@ -69,9 +80,18 @@ export const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
                   color: challenge.textColor,
                 }}
               >
+                {/* Floating Star Animation when clicked */}
+                {isAnimating && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 animate-star-float flex items-center gap-1 bg-yellow-300 text-[#2B1B15] text-xs font-black px-2.5 py-0.5 rounded-full border border-black shadow-lg">
+                    <span>+1</span>
+                    <span>⭐</span>
+                    <span>بطل!</span>
+                  </div>
+                )}
+
                 {/* Completed Stamp */}
                 {isCompleted && (
-                  <div className="absolute top-2 right-2 bg-amber-400 text-[#2B1B15] rounded-full px-1.5 py-0.5 text-[10px] font-black border border-black shadow-xs flex items-center gap-0.5">
+                  <div className="absolute top-2 right-2 bg-amber-400 text-[#2B1B15] rounded-full px-1.5 py-0.5 text-[10px] font-black border border-black shadow-xs flex items-center gap-0.5 animate-stamp-pop">
                     <span>تم</span>
                     <span>✓</span>
                   </div>
@@ -92,7 +112,11 @@ export const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
                     >
                       {challenge.title}
                     </span>
-                    <span className="text-xl">{challenge.icon}</span>
+                    <span className={`text-xl transition-transform duration-300 ${
+                      isAnimating ? 'scale-130 rotate-12' : ''
+                    }`}>
+                      {challenge.icon}
+                    </span>
                   </div>
 
                   {challenge.subtitle && (

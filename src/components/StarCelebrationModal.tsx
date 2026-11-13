@@ -9,26 +9,12 @@ interface StarCelebrationModalProps {
   totalStars?: number;
 }
 
-const ENCOURAGING_MESSAGES = [
-  { text: 'أنت بطل حقيقي نفتخر بك دائماً!', icon: '🌟', badge: 'فخر الأبطال' },
-  { text: 'عاش البطل! خطوة جديدة ومميزة نحو القمة!', icon: '🚀', badge: 'عزيمة خارقة' },
-  { text: 'ما شاء الله عليك! كل يوم تصبح أقوى وأذكى!', icon: '💪', badge: 'قوة وذكاء' },
-  { text: 'أفعالك الطيبة تجعل عائلتك فخورة وسعيدة بك جداً!', icon: '💖', badge: 'قلب طيب' },
-  { text: 'أنت تملك طاقة خارقة تصنع بها أشياء مدهشة!', icon: '⚡', badge: 'طاقة إيجابية' },
-  { text: 'النظام والترتيب سر الأبطال العظماء وأنت منهم!', icon: '🏆', badge: 'بطل منظم' },
-  { text: 'استمر في التألق يا بطل، مستقبلك مشرق وجميل!', icon: '☀️', badge: 'نجم المستقبل' },
-  { text: 'أنت قدوة رائعة وتثبت دائماً أنك قد التحدي!', icon: '🎯', badge: 'قد التحدي' },
-  { text: 'برافو يا شجاع! لا شيء مستحيل أمام عزيمتك!', icon: '🥇', badge: 'شجاعة فائقة' },
-  { text: 'عمل رائع ومتقن، أحسنت صنعاً يا بطلنا المميز!', icon: '👏', badge: 'إتقان وتميز' },
-];
-
 export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
   isOpen,
   onClose,
   taskTitle,
   totalStars = 1,
 }) => {
-  const [currentMessage, setCurrentMessage] = useState(ENCOURAGING_MESSAGES[0]);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(getIsMuted());
   const [displayStars, setDisplayStars] = useState<number>(Math.max(0, totalStars - 1));
   const [starCountPulsing, setStarCountPulsing] = useState<boolean>(false);
@@ -36,10 +22,6 @@ export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
   // Trigger celebration effects on modal open
   useEffect(() => {
     if (isOpen) {
-      // Pick random encouraging message
-      const randomIndex = Math.floor(Math.random() * ENCOURAGING_MESSAGES.length);
-      setCurrentMessage(ENCOURAGING_MESSAGES[randomIndex]);
-
       // Set initial count before increase
       const prevStars = Math.max(0, totalStars - 1);
       setDisplayStars(prevStars);
@@ -87,15 +69,6 @@ export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isOpen, totalStars]);
-
-  const handleNextMessage = () => {
-    playPopSound();
-    let nextIndex = Math.floor(Math.random() * ENCOURAGING_MESSAGES.length);
-    if (ENCOURAGING_MESSAGES[nextIndex].text === currentMessage.text) {
-      nextIndex = (nextIndex + 1) % ENCOURAGING_MESSAGES.length;
-    }
-    setCurrentMessage(ENCOURAGING_MESSAGES[nextIndex]);
-  };
 
   const handleToggleSound = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -197,18 +170,18 @@ export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
         </div>
 
         {/* Text under star: لقد حصلت على نجمة جديدة 🤩 */}
-        <div className="mb-2">
+        <div className="mb-4">
           <p className="text-xl font-bold text-[#3B2014] flex items-center justify-center gap-1.5">
             <span>لقد حصلت على نجمة جديدة</span>
             <span className="text-2xl">🤩</span>
           </p>
 
           {/* Real-time Star Increment Badge */}
-          <div className="flex items-center justify-center gap-2 mt-1.5">
-            <span className="font-bold text-amber-900 bg-amber-100/90 border border-amber-300 px-3 py-0.5 rounded-full text-xs shadow-xs">
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <span className="font-bold text-amber-900 bg-amber-100/90 border border-amber-300 px-3 py-1 rounded-full text-xs shadow-xs">
               +1 نجمة ذهبية ⭐
             </span>
-            <span className={`font-black text-xs px-3 py-0.5 rounded-full border border-emerald-400 bg-emerald-50 text-emerald-900 transition-all duration-300 ${
+            <span className={`font-black text-xs px-3 py-1 rounded-full border border-emerald-400 bg-emerald-50 text-emerald-900 transition-all duration-300 ${
               starCountPulsing ? 'scale-110 shadow-md ring-2 ring-emerald-300' : ''
             }`}>
               إجمالي نجومك الآن: {displayStars} ⭐
@@ -216,35 +189,7 @@ export const StarCelebrationModal: React.FC<StarCelebrationModalProps> = ({
           </div>
         </div>
 
-        {/* Animated Encouraging Message Card below the star */}
-        <div 
-          onClick={handleNextMessage}
-          title="انقر للحصول على رسالة تشجيعية أخرى!"
-          className="mb-3.5 mx-1 p-2.5 rounded-2xl bg-white/90 border-2 border-[#D97706] shadow-sm hover:shadow-md cursor-pointer transition-all transform hover:scale-102 active:scale-98 animate-in slide-in-from-bottom-2 duration-300 relative group"
-        >
-          {/* Badge indicator */}
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-black uppercase tracking-wider bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <span>{currentMessage.icon}</span>
-              <span>{currentMessage.badge}</span>
-            </span>
-            <span className="text-[10px] text-amber-800 opacity-60 group-hover:opacity-100 transition-opacity font-semibold flex items-center gap-0.5">
-              <span>رسالة أخرى</span>
-              <span>🔄</span>
-            </span>
-          </div>
-
-          {/* Animated Message Text */}
-          <p 
-            key={currentMessage.text}
-            className="text-xs md:text-sm font-extrabold text-[#381B10] leading-snug animate-in fade-in zoom-in-95 duration-200"
-            style={{ fontFamily: "'Cairo', 'Baloo Bhaijaan 2', sans-serif" }}
-          >
-            « {currentMessage.text} »
-          </p>
-        </div>
-
-        {/* Bottom Button as seen in video: العودة للمهام ⬅️ */}
+        {/* Bottom Button: العودة للمهام ⬅️ */}
         <button
           onClick={() => {
             playPopSound();

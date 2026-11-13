@@ -4,9 +4,19 @@ import { playPopSound } from '../utils/audio';
 
 interface WelcomeScreenProps {
   onStart: () => void;
+  profile?: {
+    parentName: string;
+    childFirstName: string;
+    childSecondName?: string;
+  } | null;
+  onOpenAuth?: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
+  onStart,
+  profile,
+  onOpenAuth,
+}) => {
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between items-center py-6 px-4 bg-[#D1BEAE] text-[#3D2619] overflow-hidden select-none">
       
@@ -70,7 +80,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       </div>
 
       {/* Wooden Plank Start Button at Bottom */}
-      <div className="w-full max-w-xs pb-4 z-10">
+      <div className="w-full max-w-xs pb-3 z-10 space-y-2.5">
         <button
           onClick={() => {
             playPopSound();
@@ -85,6 +95,25 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             ابدأ المغامرة
           </span>
         </button>
+
+        {onOpenAuth && (
+          <button
+            onClick={() => {
+              playPopSound();
+              onOpenAuth();
+            }}
+            className="w-full py-2.5 px-4 rounded-xl bg-white/85 hover:bg-white border-2 border-[#3D2619] text-xs font-black text-[#3D2619] flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-transform active:scale-95"
+          >
+            <span>👩‍👦</span>
+            {profile ? (
+              <span>
+                البطل المسجل: {profile.childFirstName} {profile.childSecondName || ''} (تعديل بيانات الأم ✎)
+              </span>
+            ) : (
+              <span>تسجيل الدخول للأم وكتابة اسم الطفل ✍️</span>
+            )}
+          </button>
+        )}
       </div>
 
     </div>

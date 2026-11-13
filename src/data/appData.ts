@@ -74,7 +74,7 @@ export const DAILY_TASKS: Task[] = [
   {
     id: 'study',
     title: 'بطل العلم',
-    subtitle: 'أستذكر دروسي وأقرأ كتابي',
+    subtitle: 'أذاكر دروسي وأقرأ كتابي',
     icon: '📚',
     color: '#F6C174',
     textColor: '#47280A',
@@ -192,22 +192,8 @@ export const REWARDS: Reward[] = [
     redeemedCount: 0,
   },
   {
-    id: 'r3',
-    title: 'شوكولاتة لذيذة',
-    icon: '🍫',
-    cost: 15,
-    redeemedCount: 0,
-  },
-  {
-    id: 'r4',
-    title: 'الأكلة المفضلة',
-    icon: '🍕',
-    cost: 25,
-    redeemedCount: 0,
-  },
-  {
     id: 'r5',
-    title: 'خروجة مميزة',
+    title: 'نزهة مميزة',
     icon: '🎡',
     cost: 50,
     redeemedCount: 0,
@@ -230,7 +216,7 @@ export const REWARDS: Reward[] = [
     id: 'r8',
     title: 'لعبة جديدة',
     icon: '🧸',
-    cost: 30,
+    cost: 40,
     redeemedCount: 0,
   },
 ];
