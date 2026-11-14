@@ -246,7 +246,16 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({
 
         {/* Rewards List: Original Compact Pill Layout */}
         <div className="space-y-2.5">
-          {rewards.map((reward) => {
+          {rewards
+            .filter(
+              (r) =>
+                r.id !== 'r3' &&
+                r.id !== 'r4' &&
+                !['شوكولاتة', 'شيكولاتة', 'شيكولاته', 'الأكلة المفضلة', 'الاكلة المفضلة', 'وجبة مفضلة'].some((kw) =>
+                  (r.title || '').includes(kw)
+                )
+            )
+            .map((reward) => {
             const canAfford = stars >= reward.cost;
 
             return (

@@ -30,6 +30,15 @@ const STORAGE_KEYS = {
   REWARDS: 'world_of_heroes_rewards_list',
 };
 
+const BANNED_REWARD_IDS = ['r3', 'r4'];
+const BANNED_REWARD_KEYWORDS = ['شوكولاتة', 'شيكولاتة', 'شيكولاته', 'الأكلة المفضلة', 'الاكلة المفضلة', 'وجبة مفضلة'];
+
+const isAllowedReward = (r: Reward): boolean => {
+  if (BANNED_REWARD_IDS.includes(r.id)) return false;
+  const title = (r.title || '').trim();
+  return !BANNED_REWARD_KEYWORDS.some((kw) => title.includes(kw));
+};
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
   const [returnScreenAfterAuth, setReturnScreenAfterAuth] = useState<Screen>('heroes');
@@ -45,7 +54,7 @@ export default function App() {
   const [profile, setProfile] = useState<ParentChildProfile | null>(null);
 
   // Rewards list
-  const [rewardsList, setRewardsList] = useState<Reward[]>(REWARDS);
+  const [rewardsList, setRewardsList] = useState<Reward[]>(() => REWARDS.filter(isAllowedReward));
 
   // Child's custom gift requests
   const [customRequests, setCustomRequests] = useState<CustomRewardRequest[]>([]);
@@ -76,7 +85,7 @@ export default function App() {
       if (savedRewards) {
         const parsed: Reward[] = JSON.parse(savedRewards);
         // Ensure removed rewards (chocolate & favorite meal) do not persist from older localStorage
-        const filtered = parsed.filter((r) => r.id !== 'r3' && r.id !== 'r4');
+        const filtered = parsed.filter(isAllowedReward);
         setRewardsList(filtered);
         localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(filtered));
       }
